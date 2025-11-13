@@ -1,5 +1,5 @@
 // src/components/BookCard.tsx
-import { Book } from "../models/Book";
+import { Book } from "@/models/Book";
 
 interface Props {
   book: Book;

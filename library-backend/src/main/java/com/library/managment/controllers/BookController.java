@@ -17,18 +17,16 @@ import java.util.Optional;
 @CrossOrigin(origins = "${SPRING_ORIGINS:*}")
 public class BookController {
 
+    // Ctrl + Alt + Shift + J     Select All Occurrences of a Word
+
     @Autowired
     private BookRepository bookRepository;
     public static final String BASE_URL = "https://raw.githubusercontent.com/smoothcoode/Image/refs/heads/main/books/";
 
 
     // Get all books
+
     @GetMapping
-    public List<Book> getAllBooks() {
-        return bookRepository.findAll();
-    }
-    // Get all books with pagination (9 items per page)
-    @GetMapping("/pageable")
     public Page<Book> getAllBooksPageable(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "9") int size,
@@ -58,10 +56,8 @@ public class BookController {
         }
         // Always match availableCopies to totalCopies
         book.setAvailableCopies(book.getTotalCopies());
-
         // Prepend BASE_URL to image URL
         book.setImageUrl(BASE_URL + book.getImageUrl());
-
         return book;
     }
 

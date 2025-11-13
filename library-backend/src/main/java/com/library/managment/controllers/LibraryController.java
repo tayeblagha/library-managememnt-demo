@@ -16,20 +16,6 @@ public class LibraryController {
     @Autowired
     private LibraryService libraryService;
 
-    // Member enters library
-    @PostMapping("/enter/{memberId}")
-    public String enterLibrary(@PathVariable Long memberId) {
-        libraryService.userEntersLibrary(memberId);
-        return "Member entered library.";
-    }
-
-    // Member leaves library
-    @PostMapping("/leave/{memberId}")
-    public String leaveLibrary(@PathVariable Long memberId) {
-        libraryService.userLeavesLibrary(memberId);
-        return "Member left library.";
-    }
-
     // Request a book
     @PostMapping("/request")
     public String requestBook(@RequestParam Long memberId, @RequestParam Long bookId) {

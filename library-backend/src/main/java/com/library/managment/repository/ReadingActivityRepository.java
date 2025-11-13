@@ -8,4 +8,5 @@ import java.util.List;
 public interface ReadingActivityRepository extends JpaRepository<ReadingActivity, Long> {
     List<ReadingActivity> findByBookIdAndIsActiveTrue(Long bookId);
     List<ReadingActivity> findByMemberIdAndIsActiveTrue(Long memberId);
+    boolean existsByMemberIdAndBookIdAndIsActiveTrue(Long memberId, Long bookId);
 }

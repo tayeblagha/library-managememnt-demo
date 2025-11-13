@@ -1,12 +1,15 @@
 package com.library.managment.Sevices;
 
 import com.library.managment.model.Book;
+import com.library.managment.model.Member;
 import com.library.managment.model.Notification;
 import com.library.managment.model.ReadingActivity;
 import com.library.managment.repository.BookRepository;
 import com.library.managment.repository.MemberRepository;
 import com.library.managment.repository.ReadingActivityRepository;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -17,8 +20,7 @@ public class LibraryService {
 
     // In-memory storage for quick access
     private final Set<Long> activeUsers = new HashSet<>();
-    // consider creating sorted one to many relation ship for this
-    // consider scheduling at 8pm to reset the Map and hashset 
+
     private final Map<Long, Queue<Long>> bookWaitingQueues = new HashMap<>(); // bookId -> queue of memberIds
     private final Queue<Notification> adminNotifications = new LinkedList<>();
 
@@ -30,6 +32,38 @@ public class LibraryService {
 
     @Autowired
     private ReadingActivityRepository readingActivityRepository;
+
+
+
+
+    @PostConstruct
+    public void initializeActiveMembers() {
+        System.out.println("🚀 Initializing active members on first run...");
+        List<Member> activeMembers = memberRepository.findByIsActiveTrue();
+        for (Member m : activeMembers) {
+            activeUsers.add(m.getId());
+        }
+        System.out.println(activeUsers);
+    }
+    public Set<Long> getActiveUsers() {
+        return activeUsers;
+    }
+
+
+    // do not forget to add @enablesceduling in main
+    @Scheduled(cron = "0 0 20 * * *") // second, minute, hour, day, month, day-of-week
+    public void resetLibraryMemory() {
+        System.out.println("🕗 Clearing in-memory data for new day... " + LocalDateTime.now());
+        activeUsers.clear();
+        bookWaitingQueues.clear();
+        adminNotifications.clear();
+        // update db
+        for (Member m: memberRepository.findAll()){
+            m.setActive(false);
+            memberRepository.save(m);
+        }
+    }
+
 
     // User enters library
     public void userEntersLibrary(Long memberId) {
@@ -55,12 +89,14 @@ public class LibraryService {
             return "User not in library";
         }
 
-        Book book = bookRepository.findById(bookId).orElse(null);
-        if (book == null) return "Book not found";
+        Book book = bookRepository.findById(bookId).orElseThrow();
+        Member member = memberRepository.findById(memberId).orElseThrow();
+
+
 
         if (book.getAvailableCopies() > 0) {
             // Start reading immediately
-            startReadingActivity(memberId, book);
+            startReadingActivity(member, book);
             return "Book assigned successfully";
         } else {
             // Add to waiting queue
@@ -89,9 +125,9 @@ public class LibraryService {
         }
     }
 
-    private void startReadingActivity(Long memberId, Book book) {
+    private void startReadingActivity(Member member, Book book) {
         ReadingActivity activity = new ReadingActivity();
-        activity.setMember(memberRepository.findById(memberId).orElse(null));
+        activity.setMember(member);
         activity.setBook(book);
         activity.setStartTime(LocalDateTime.now());
         activity.setExpectedEndTime(LocalDateTime.now().plusHours(4));
@@ -148,8 +184,9 @@ public class LibraryService {
             Long memberId = queue.poll();
             if (activeUsers.contains(memberId)) {
                 Book book = bookRepository.findById(bookId).orElse(null);
+                Member member = memberRepository.findById(memberId).orElseThrow();
                 if (book != null && book.getAvailableCopies() > 0) {
-                    startReadingActivity(memberId, book);
+                    startReadingActivity(member, book);
                 }
             }
         }

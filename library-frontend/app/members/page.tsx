@@ -1,9 +1,10 @@
 import React from 'react'
-
+import MemberList from '@/components/members/MemberList'
 function page() {
   return (
-    <div>members work </div>
+    <MemberList/> 
   )
 }
+
 
 export default page
