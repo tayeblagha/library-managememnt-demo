@@ -22,7 +22,6 @@ public class LibraryService {
 
     // In-memory storage for quick access
     private final Set<Long> activeUsers = new HashSet<>();
-
     private final Map<Long, Queue<Long>> bookWaitingQueues = new HashMap<>(); // bookId -> queue of memberIds
     private final Queue<Notification> adminNotifications = new LinkedList<>();
 
@@ -36,8 +35,6 @@ public class LibraryService {
     private ReadingActivityRepository readingActivityRepository;
 
 
-
-
     @PostConstruct
     public void initializeActiveMembers() {
         System.out.println("🚀 Initializing active members on first run...");
@@ -47,6 +44,7 @@ public class LibraryService {
         }
         System.out.println(activeUsers);
     }
+
     public Set<Long> getActiveUsers() {
         return activeUsers;
     }
@@ -60,7 +58,7 @@ public class LibraryService {
         bookWaitingQueues.clear();
         adminNotifications.clear();
         // update db
-        for (Member m: memberRepository.findAll()){
+        for (Member m : memberRepository.findAll()) {
             m.setActive(false);
             memberRepository.save(m);
         }
@@ -86,8 +84,8 @@ public class LibraryService {
     }
 
     private void startReadingActivity(Member member, Book book) {
-        ReadingActivity activity = new ReadingActivity(book,member,LocalDateTime.now()
-                ,LocalDateTime.now().plusHours(4));
+        ReadingActivity activity = new ReadingActivity(book, member, LocalDateTime.now()
+                , LocalDateTime.now().plusHours(4));
         book.setAvailableCopies(book.getAvailableCopies() - 1);
         bookRepository.save(book);
         readingActivityRepository.save(activity);
@@ -113,17 +111,15 @@ public class LibraryService {
         // ensure a thread-safe queue exists for this book
         Queue<Long> queue = bookWaitingQueues.computeIfAbsent(bookId, k -> new LinkedList<>());
         Long head = queue.peek();
-        String message="";
-        if (head != null && !Objects.equals(head, memberId)  ) {
-           message="Someone else requested this book first, you'll get your turn soon!";
-        }
+        String message = "";
+        if (head != null && !Objects.equals(head, memberId)) {
+            message = "Someone else requested this book first, you'll get your turn soon!";
+        } else if (book.getAvailableCopies() > 0 && (Objects.equals(head, memberId) || queue.isEmpty())) {
 
-        else if (book.getAvailableCopies() > 0 && (Objects.equals(head, memberId) || queue.isEmpty())  ) {
-
-                queue.poll();
-                startReadingActivity(member, book);
-                return new BookBorrowResponse(true,
-                        "Book " + book.getTitle() + " assigned successfully to " + member.getName());
+            queue.poll();
+            startReadingActivity(member, book);
+            return new BookBorrowResponse(true,
+                    "Book " + book.getTitle() + " assigned successfully to " + member.getName());
 
         }
 
@@ -132,7 +128,7 @@ public class LibraryService {
             queue.add(memberId);
         }
         // Find user rank in queue
-        long  rank = 1;
+        long rank = 1;
         boolean exists = false;
 
         for (Long id : queue) {
@@ -149,7 +145,7 @@ public class LibraryService {
         }
 
         return new BookBorrowResponse(false,
-                "Book not available." + message+"You are in waiting list.",
+                "Book not available." + message + "You are in waiting list.",
                 rank);
     }
 
@@ -168,7 +164,6 @@ public class LibraryService {
             checkWaitingQueue(book.getId());
         }
     }
-
 
 
     private void checkWaitingQueue(Long bookId) {
@@ -190,7 +185,6 @@ public class LibraryService {
     }
 
 
-
     private void updateAdminNotifications() {
         // Remove notifications for users who left
 
@@ -209,17 +203,17 @@ public class LibraryService {
             if (activeUsers.contains(memberId)) {
 
                 Member member = memberRepository.findById(memberId).orElseThrow();
-                if ( book.getAvailableCopies() > 0) {
+                if (book.getAvailableCopies() > 0) {
                     startReadingActivity(member, book);
                     adminNotifications.removeIf(n -> Objects.equals(n.getBook().getId(), bookId));
 
-                    return new  BookBorrowResponse(true,
-                            "Book "+book.getTitle()+" assigned successfully to "+member.getName() );
+                    return new BookBorrowResponse(true,
+                            "Book " + book.getTitle() + " assigned successfully to " + member.getName());
                 }
             }
         }
-        return new  BookBorrowResponse(false,
-                "No available candidates for the Book "+book.getTitle() );
+        return new BookBorrowResponse(false,
+                "No available candidates for the Book " + book.getTitle());
 
 
     }

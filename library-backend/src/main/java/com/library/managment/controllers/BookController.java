@@ -1,9 +1,7 @@
 package com.library.managment.controllers;
 
 import com.library.managment.model.Book;
-import com.library.managment.model.ReadingActivity;
 import com.library.managment.repository.BookRepository;
-import com.library.managment.repository.ReadingActivityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -11,8 +9,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,6 +41,7 @@ public class BookController {
             return bookRepository.findAll(pageable);
         }
     }
+
     // Get book by id
     @GetMapping("/{id}")
     public ResponseEntity<Book> getBookById(@PathVariable Long id) {
@@ -74,7 +71,7 @@ public class BookController {
     @PostMapping("/batch")
     public List<Book> createBooks(@RequestBody List<Book> books) {
         // Initialize each book in the list
-        for (Book book : books){
+        for (Book book : books) {
             initializeBook(book);
         }
         return bookRepository.saveAll(books);
@@ -110,7 +107,6 @@ public class BookController {
         bookRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
-
 
 
 }

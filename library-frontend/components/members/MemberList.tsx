@@ -20,7 +20,10 @@ export default function MemberList() {
 
   const pageSize = 9;
   const isAppend = currentPage > 0;
-  const showSpinner = useDelayedSpinner(isLoading, isAppend, { delayBeforeShowMs: 300, minVisibleMs: 1500 });
+  const showSpinner = useDelayedSpinner(isLoading, isAppend, {
+    delayBeforeShowMs: 300,
+    minVisibleMs: 1500,
+  });
 
   // ✅ CHANGED: added explicit `page` parameter to avoid stale currentPage issues
   const loadMembers = useCallback(
@@ -31,17 +34,25 @@ export default function MemberList() {
       isLoadingRef.current = true;
 
       try {
-        const delayPromise = append ? new Promise((r) => setTimeout(r, 1500)) : Promise.resolve();
+        const delayPromise = append
+          ? new Promise((r) => setTimeout(r, 1500))
+          : Promise.resolve();
 
         const [response] = await Promise.all([
           // ✅ CHANGED: still same logic, but now uses explicit `page`
           showActiveOnly
-            ? MemberService.searchActiveMembersByTitle(searchTerm, page, pageSize)
+            ? MemberService.searchActiveMembersByTitle(
+                searchTerm,
+                page,
+                pageSize
+              )
             : MemberService.searchMembersByTitle(searchTerm, page, pageSize),
           delayPromise,
         ]);
 
-        const newMembers = Array.isArray(response?.content) ? response.content : [];
+        const newMembers = Array.isArray(response?.content)
+          ? response.content
+          : [];
 
         setMembers((prev) => (append ? [...prev, ...newMembers] : newMembers));
         setHasMore(response?.last === false);
@@ -94,7 +105,9 @@ export default function MemberList() {
       const updated = await MemberService.toggleActive(id, currentActive);
 
       setMembers((prev) => {
-        const updatedList = prev.map((m) => (m.id === id ? { ...m, active: updated.active } : m));
+        const updatedList = prev.map((m) =>
+          m.id === id ? { ...m, active: updated.active } : m
+        );
         // ✅ NEW: if we're showing only active members and one becomes inactive, remove it from the list
         if (showActiveOnly && !updated.active) {
           return updatedList.filter((m) => m.id !== id);
@@ -122,8 +135,18 @@ export default function MemberList() {
             className="w-full px-4 py-3 pl-12 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <div className="absolute inset-y-0 left-0 flex items-center pl-4">
-            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            <svg
+              className="w-5 h-5 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
             </svg>
           </div>
         </div>
@@ -135,11 +158,13 @@ export default function MemberList() {
             // ✅ no manual reload — handled by useEffect above
           }}
           className={`px-4 py-3 rounded-lg font-medium text-sm transition-all duration-300 cursor-pointer border ${
-            showActiveOnly ? "bg-green-500 hover:bg-green-600 text-white border-green-600" : "bg-gray-200 hover:bg-gray-300 text-gray-800 border-gray-300"
+            showActiveOnly
+              ? "bg-green-500 hover:bg-green-600 text-white border-green-600"
+              : "bg-gray-200 hover:bg-gray-300 text-gray-800 border-gray-300"
           }`}
         >
           <i className="fa fa-users" aria-hidden="true"></i>
- <i className="fa-solid fa-circle"></i>
+          <i className="fa-solid fa-circle"></i>
         </button>
       </div>
 
@@ -156,9 +181,17 @@ export default function MemberList() {
         </div>
       )}
 
-      {!hasMore && members.length > 0 && <div className="text-center py-8 text-gray-500">No more members to load</div>}
+      {!hasMore && members.length > 0 && (
+        <div className="text-center py-8 text-gray-500">
+          No more members to load
+        </div>
+      )}
 
-      {!isLoading && members.length === 0 && <div className="text-center py-12 text-gray-500 text-lg">No members found</div>}
+      {!isLoading && members.length === 0 && (
+        <div className="text-center py-12 text-gray-500 text-lg">
+          No members found
+        </div>
+      )}
     </div>
   );
 }

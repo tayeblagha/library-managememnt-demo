@@ -14,29 +14,30 @@ type Option = {
   book: Book;
 };
 
-export default function MemberBookManager({ memberId = 1 }: { memberId: number }) {
-
-    const [member, setMember] = useState<any>(null);
+export default function MemberBookManager({
+  memberId = 1,
+}: {
+  memberId: number;
+}) {
+  const [member, setMember] = useState<any>(null);
 
   const [options, setOptions] = useState<Option[]>([]);
   const [selectedOption, setSelectedOption] = useState<Option | null>(null);
   const [borrowedBooks, setBorrowedBooks] = useState<ReadingActivity[]>([]);
   const [loadingBooks, setLoadingBooks] = useState(true);
 
-    const loadMember = async () => {
-  try {
-    const m = await MemberService.getMemberById(memberId);
-    setMember(m);
-  } catch (error) {
-    console.error("Failed to load member:", error);
-  }
-};
+  const loadMember = async () => {
+    try {
+      const m = await MemberService.getMemberById(memberId);
+      setMember(m);
+    } catch (error) {
+      console.error("Failed to load member:", error);
+    }
+  };
 
-
-useEffect(() => {
-  loadMember();
-}, [memberId]);
-
+  useEffect(() => {
+    loadMember();
+  }, [memberId]);
 
   const loadAvailableBooks = async () => {
     try {
@@ -82,35 +83,37 @@ useEffect(() => {
     if (!selectedOption) return;
 
     try {
-      const res = await MemberService.requestBook(memberId, selectedOption.value);
-
-     
+      const res = await MemberService.requestBook(
+        memberId,
+        selectedOption.value
+      );
 
       // Remove the borrowed book from available options
-      if (res.success){
-        setOptions(prev => prev.filter(option => option.value !== selectedOption.value));
-         // SweetAlert success message
-      Swal.fire({
-        icon: "success",
-        title: "Book Requested",
-        text: res.message,
-        timer: 10000,
-        showConfirmButton: false,
-      });}
-      else {
-           Swal.fire({
-        icon: "info",
-        title: "Book Requested",
-         html: `
+      if (res.success) {
+        setOptions((prev) =>
+          prev.filter((option) => option.value !== selectedOption.value)
+        );
+        // SweetAlert success message
+        Swal.fire({
+          icon: "success",
+          title: "Book Requested",
+          text: res.message,
+          timer: 10000,
+          showConfirmButton: false,
+        });
+      } else {
+        Swal.fire({
+          icon: "info",
+          title: "Book Requested",
+          html: `
       ${res.message}<br/>
       ${res.rank ? `<strong> Rank   : ${res.rank}</strong>` : ""}
     `,
-        timer: 10000,
-        showConfirmButton: false,
-      });}
-      
-      
-      
+          timer: 10000,
+          showConfirmButton: false,
+        });
+      }
+
       setSelectedOption(null);
 
       // Reload borrowed books
@@ -163,23 +166,15 @@ useEffect(() => {
   };
 
   return (
-
-
-    
     <div className="w-[360px] mx-auto mt-6">
-
-     <div className="flex flex-col items-center gap-2 mb-4">
-    <img
-      src={member?.imageUrl}
-      className="w-12 h-12 rounded-full object-cover"
-      alt={member?.name}
-    />
-    <span className="font-semibold text-center">{member?.name}</span>
-  </div>
-
-
-
-
+      <div className="flex flex-col items-center gap-2 mb-4">
+        <img
+          src={member?.imageUrl}
+          className="w-12 h-12 rounded-full object-cover"
+          alt={member?.name}
+        />
+        <span className="font-semibold text-center">{member?.name}</span>
+      </div>
 
       <h3 className="text-lg font-semibold mb-3">Request a Book</h3>
 
@@ -205,7 +200,9 @@ useEffect(() => {
                     />
                     <div>
                       <div>{opt.label}</div>
-                      <div className="text-xs opacity-60">{opt.book.author}</div>
+                      <div className="text-xs opacity-60">
+                        {opt.book.author}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -214,20 +211,18 @@ useEffect(() => {
 
             <button
               onClick={requestBook}
-              disabled={!selectedOption || !member.active }
+              disabled={!selectedOption || !member.active}
               className="px-4 py-2 bg-blue-600 text-white rounded disabled:bg-gray-400 hover:bg-blue-700 transition-colors"
             >
               <i className="fa-solid fa-book-medical"></i>
             </button>
-            
           </div>
-                {!member.active && (
-  <span className="text-sm text-yellow-500 flex items-center gap-1 mt-2">
-    only active Members can request a book <i className="fa-solid fa-exclamation"></i>
-  </span>
-)}
-
-
+          {!member.active && (
+            <span className="text-sm text-yellow-500 flex items-center gap-1 mt-2">
+              only active Members can request a book{" "}
+              <i className="fa-solid fa-exclamation"></i>
+            </span>
+          )}
         </>
       )}
 

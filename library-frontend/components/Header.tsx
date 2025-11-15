@@ -16,7 +16,9 @@ export default function Header() {
           </div>
           <div>
             <h1 className="text-2xl font-bold">Library Management</h1>
-            <p className="text-xs text-gray-500">Browse, manage and lend books</p>
+            <p className="text-xs text-gray-500">
+              Browse, manage and lend books
+            </p>
           </div>
         </div>
 
@@ -25,7 +27,9 @@ export default function Header() {
           <Link
             href="/"
             className={`text-lg font-semibold pb-1 ${
-              pathname === "/" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-gray-600 hover:text-indigo-600"
+              pathname === "/"
+                ? "text-indigo-600 border-b-2 border-indigo-600"
+                : "text-gray-600 hover:text-indigo-600"
             }`}
           >
             Books <i className="fa-solid fa-book"></i>
@@ -34,19 +38,23 @@ export default function Header() {
           <Link
             href="/members"
             className={`text-lg font-semibold pb-1 ${
-              pathname === "/members" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-gray-600 hover:text-indigo-600"
+              pathname === "/members"
+                ? "text-indigo-600 border-b-2 border-indigo-600"
+                : "text-gray-600 hover:text-indigo-600"
             }`}
           >
             Members <i className="fa fa-users" aria-hidden="true"></i>
           </Link>
 
-              <Link
+          <Link
             href="/library"
             className={`text-lg font-semibold pb-1 ${
-              pathname === "/library" ? "text-indigo-600 border-b-2 border-indigo-600" : "text-gray-600 hover:text-indigo-600"
+              pathname === "/library"
+                ? "text-indigo-600 border-b-2 border-indigo-600"
+                : "text-gray-600 hover:text-indigo-600"
             }`}
           >
-            Reading Activity  <i className="fas fa-book-reader"></i>
+            Reading Activity <i className="fas fa-book-reader"></i>
           </Link>
         </nav>
       </div>

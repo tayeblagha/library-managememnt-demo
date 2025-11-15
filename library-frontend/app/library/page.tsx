@@ -1,8 +1,8 @@
 import React from 'react'
-import NotificationList from '@/components/notifications/notification'
+import Library from '@/components/library/library'
 function page() {
   return (
-    <NotificationList/>
+    <Library/>
   )
 }
 

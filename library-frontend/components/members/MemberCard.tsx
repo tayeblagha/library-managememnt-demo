@@ -24,7 +24,7 @@ export default function MemberCard({ member, onToggle }: Props) {
       <div
         className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg 
                    transition-shadow duration-300 h-[750px] flex flex-col
-                   cursor-pointer"       // 👈 SHOW HAND ON HOVER
+                   cursor-pointer" // 👈 SHOW HAND ON HOVER
         onClick={() => setOpenPopup(true)} // 👈 OPEN POPUP WHEN CLICKED
       >
         <div className="h-[650px] overflow-hidden">

@@ -6,7 +6,7 @@ import { NotificationDTO } from "@/models/NotificationDTO";
 import { ReadingActivity } from "@/models/ReadingActivity";
 import Swal from "sweetalert2";
 
-const NotificationList = () => {
+const Library = () => {
   const [notifications, setNotifications] = useState<NotificationDTO[]>([]);
   const [expiredBooks, setExpiredBooks] = useState<ReadingActivity[]>([]);
   const [approving, setApproving] = useState<number | null>(null);
@@ -38,7 +38,11 @@ const NotificationList = () => {
     return () => clearInterval(interval);
   }, [fetchData]);
 
-  const handleApprove = async (bookId: number, memberName: string, bookTitle: string) => {
+  const handleApprove = async (
+    bookId: number,
+    memberName: string,
+    bookTitle: string
+  ) => {
     const result = await Swal.fire({
       title: "Are you sure?",
       text: `Are you sure member "${memberName}" returned the book "${bookTitle}"?`,
@@ -59,9 +63,7 @@ const NotificationList = () => {
     try {
       const result = await LibraryService.approveNextReader(bookId);
       if (result.success) {
-        setNotifications((prev) =>
-          prev.filter((n) => n.book.id !== bookId)
-        );
+        setNotifications((prev) => prev.filter((n) => n.book.id !== bookId));
         // Show success message
         await Swal.fire({
           title: "Approved!",
@@ -142,9 +144,7 @@ const NotificationList = () => {
 
                   <div>
                     <p className="font-medium">{n.book.title}</p>
-                    <p className="text-sm text-gray-600">
-                      {n.book.author}
-                    </p>
+                    <p className="text-sm text-gray-600">{n.book.author}</p>
 
                     <div className="text-sm text-gray-500 mt-1 flex gap-3">
                       <span>
@@ -154,14 +154,14 @@ const NotificationList = () => {
                         <i className="fa-solid fa-clock"></i>{" "}
                         {formatTime(n.timestamp)}
                       </span>
-                      
                     </div>
                   </div>
                 </div>
 
                 <button
                   onClick={() =>
-                    n.book.id !== undefined && handleApprove(n.book.id, n.member.name, n.book.title)
+                    n.book.id !== undefined &&
+                    handleApprove(n.book.id, n.member.name, n.book.title)
                   }
                   disabled={approving === n.book.id}
                   className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 disabled:bg-green-300 flex items-center gap-2"
@@ -246,4 +246,4 @@ const NotificationList = () => {
   );
 };
 
-export default NotificationList;
+export default Library;

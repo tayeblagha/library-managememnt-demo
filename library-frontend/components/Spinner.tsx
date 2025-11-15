@@ -7,7 +7,12 @@ type SpinnerProps = {
   ariaLabel?: string;
 };
 
-export default function Spinner({ size = 32, message, className = "", ariaLabel = "Loading" }: SpinnerProps) {
+export default function Spinner({
+  size = 32,
+  message,
+  className = "",
+  ariaLabel = "Loading",
+}: SpinnerProps) {
   const borderSize = Math.max(2, Math.round(size / 16));
   const style: React.CSSProperties = {
     height: size,
@@ -16,7 +21,11 @@ export default function Spinner({ size = 32, message, className = "", ariaLabel 
   };
 
   return (
-    <div className={`flex flex-col items-center ${className}`} aria-live="polite" aria-label={ariaLabel}>
+    <div
+      className={`flex flex-col items-center ${className}`}
+      aria-live="polite"
+      aria-label={ariaLabel}
+    >
       <div
         className="inline-block animate-spin rounded-full border-t-2 border-b-2"
         style={style}
