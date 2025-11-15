@@ -2,9 +2,14 @@ package com.library.managment.controllers;
 
 
 import com.library.managment.Sevices.LibraryService;
+import com.library.managment.dto.BookBorrowResponse;
+import com.library.managment.model.Book;
 import com.library.managment.model.Member;
 import com.library.managment.model.Member;
+import com.library.managment.model.ReadingActivity;
+import com.library.managment.repository.BookRepository;
 import com.library.managment.repository.MemberRepository;
+import com.library.managment.repository.ReadingActivityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -12,8 +17,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/member")
@@ -23,6 +28,10 @@ public class MemberController {
 
     @Autowired
     private MemberRepository memberRepository;
+    @Autowired
+    private BookRepository bookRepository;
+    @Autowired
+    private ReadingActivityRepository readingActivityRepository;
     @Autowired
     private LibraryService libraryService;
     public static final String BASE_URL = "https://raw.githubusercontent.com/smoothcoode/Image/refs/heads/main/members/";
@@ -43,6 +52,23 @@ public class MemberController {
         }
     }
 
+
+    // Get all members
+    @GetMapping("/active")
+    public Page<Member> getAllActiveMembersPageable(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "9") int size,
+            @RequestParam(required = false) String name)
+    {
+        Pageable pageable = PageRequest.of(page, size);
+
+        if (name != null && !name.trim().isEmpty()) {
+            return memberRepository.findByNameContainingIgnoreCaseAndActiveTrue(name,pageable);
+        } else {
+            return memberRepository.findByActiveTrue(pageable);
+        }
+    }
+
     // Get member by id
     @GetMapping("/{id}")
     public ResponseEntity<Member> getMemberById(@PathVariable Long id) {
@@ -59,7 +85,10 @@ public class MemberController {
     // Add new member
     @PostMapping
     public Member createMember(@RequestBody Member member) {
-        return memberRepository.save(initializeMember(member));
+
+        Member m= memberRepository.save(initializeMember(member));
+        libraryService.userEntersLibrary(m.getId());
+        return  m;
     }
 
     @PostMapping("/batch")
@@ -68,7 +97,9 @@ public class MemberController {
         for (Member member : members){
             initializeMember(member);
         }
-        return memberRepository.saveAll(members);
+        List<Member> savedMembers= memberRepository.saveAll(members);
+        for (Member m : savedMembers) libraryService.userEntersLibrary(m.getId());
+        return savedMembers;
     }
     // Update existing member
     @PutMapping("/{id}")
@@ -97,22 +128,55 @@ public class MemberController {
     }
 
     // Member enters library
-    @PostMapping("/activate/{id}")
+    @PostMapping("/toggle-active/{id}")
     public Member enterLibrary(@PathVariable Long id) {
         Member member = memberRepository.findById(id).orElseThrow();
-        member.setActive(true);
-        libraryService.userEntersLibrary(id);
+        if (member.getActive()) { libraryService.userLeavesLibrary(id);  }
+        else {libraryService.userEntersLibrary(id);}
+        member.setActive(!member.getActive());
+
+
         return memberRepository.save(member);
     }
-
-    // Member leaves library
-    @PostMapping("/deactivate/{id}")
-    public Member leaveLibrary(@PathVariable Long id) {
-        Member member = memberRepository.findById(id).orElseThrow();
-        member.setActive(false);
-        libraryService.userLeavesLibrary(id);
-        return memberRepository.save(member) ;
+    @GetMapping("borrowed/{memberId}")
+    public List<ReadingActivity> getBorrowedBooks(@PathVariable Long memberId) {
+        return readingActivityRepository
+                .findByMemberIdAndIsActiveTrue(memberId);
     }
+
+
+    @GetMapping("available/{memberId}")
+    public List<Book> getAvailableBooks(@PathVariable Long memberId) {
+        Set<Long> activeBookIds = readingActivityRepository
+                .findByMemberIdAndIsActiveTrue(memberId)
+                .stream()
+                .map(ra -> ra.getBook().getId())
+                .collect(Collectors.toSet());
+
+        List<Book> availableBooks = new ArrayList<>();
+        for (Book b : bookRepository.findAll()) {
+            if (!activeBookIds.contains(b.getId())) availableBooks.add(b);
+        }
+        return  availableBooks;
+    }
+
+
+    // Request a book
+    @PostMapping("/request/{memberId}/{bookId}")
+    public BookBorrowResponse requestBook(@PathVariable  Long memberId, @PathVariable Long bookId) {
+        return libraryService.requestBook(memberId, bookId);
+    }
+
+    // Return a book
+    @PostMapping("/return/{activityId}")
+    public BookBorrowResponse returnBook(@PathVariable Long activityId) {
+        libraryService.returnBook(activityId);
+        return new BookBorrowResponse(true,"book returned successfully");
+    }
+
+
+
+
 
 
 

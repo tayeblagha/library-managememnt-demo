@@ -20,6 +20,16 @@ public class ReadingActivity {
     private LocalDateTime expectedEndTime;
     private Boolean isActive = true;
 
+    public ReadingActivity() {
+    }
+
+    public ReadingActivity(Book book, Member member, LocalDateTime startTime, LocalDateTime expectedEndTime) {
+        this.book = book;
+        this.member = member;
+        this.startTime = startTime;
+        this.expectedEndTime = expectedEndTime;
+    }
+
     public Long getId() {
         return id;
     }

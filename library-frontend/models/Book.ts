@@ -1,6 +1,6 @@
 // src/models/Book.ts
 export interface Book {
-  id: number;
+  id?: number;
   title: string;
   author: string;
   imageUrl: string;

@@ -3,6 +3,9 @@ export interface Member {
   id: number;
   name: string;
   imageUrl: string;
+  active: boolean;
+  
+
   
 }
 
@@ -17,3 +20,6 @@ export interface MemberResponse {
   numberOfElements: number;
   empty: boolean;
 }
+
+
+  

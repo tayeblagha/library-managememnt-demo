@@ -10,7 +10,12 @@ import java.util.List;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
     Page<Member> findByNameContainingIgnoreCase(String name, Pageable pageable);
-    List<Member> findByIsActiveTrue();
+    Page<Member> findByNameContainingIgnoreCaseAndActiveTrue(String name, Pageable pageable);
+    List<Member> findByActiveTrue();
+    Page<Member> findByActiveTrue(Pageable pageable);
+
+
+
 
 }
 
