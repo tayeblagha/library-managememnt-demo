@@ -34,10 +34,13 @@ public class LibraryService {
     @Autowired
     private ReadingActivityRepository readingActivityRepository;
 
+    // Limit how many top candidates to show in notifications
+    private static final int NOTIFY_LIMIT = 3;
+
     // Improved thread-safe data structures
     private final Set<Long> activeUsers = ConcurrentHashMap.newKeySet();
 
-    // BookId -> Ordered set of waiting members (maintains order with O(1) operations)
+    // BookId -> Ordered set of waiting members (maintains order with O(1) ops)
     private final Map<Long, LinkedHashSet<Long>> bookWaitingQueues = new ConcurrentHashMap<>();
 
     // Track durations for waiting members
@@ -83,7 +86,7 @@ public class LibraryService {
         durationTracker.clear();
         bookLocks.clear();
 
-        // Update database
+        // Update database: mark all members inactive for the new day
         List<Member> allMembers = memberRepository.findAll();
         for (Member m : allMembers) {
             m.setActive(false);
@@ -109,45 +112,27 @@ public class LibraryService {
 
     private void refillNotifications(Long bookId) {
         LinkedHashSet<Long> waitingQueue = bookWaitingQueues.get(bookId);
-        if (waitingQueue == null || waitingQueue.isEmpty()) return;
+        if (waitingQueue == null || waitingQueue.isEmpty()) {
+            bookNotificationMembers.remove(bookId);
+            return;
+        }
 
         Book book = bookRepository.findById(bookId).orElse(null);
         if (book == null) return;
 
-        // Get (or create) ordered set of notified members for this book
-        LinkedHashSet<Long> notifiedMembers = bookNotificationMembers.computeIfAbsent(bookId,
-                k -> new LinkedHashSet<>());
-
-        // Remove any notified members that are no longer valid (inactive or removed from repo)
-        // We must iterate on a copy to avoid concurrent modification while removing from original set.
-        List<Long> toRemove = new ArrayList<>();
-        for (Long notified : notifiedMembers) {
-            if (!activeUsers.contains(notified) || !memberRepository.existsById(notified)) {
-                toRemove.add(notified);
-            }
-        }
-        for (Long r : toRemove) {
-            notifiedMembers.remove(r);
-            updateMemberWaitingBooks(r, bookId, false);
-            removeDurationTrackerByMemberId(r);
-        }
-
-        // Compute remaining notifications allowed: available copies minus already-notified members.
-        int remainingToNotify = book.getAvailableCopies() - notifiedMembers.size();
-        if (remainingToNotify <= 0) {
-            // nothing to do; if no notified members exist at all, remove the empty set
-            if (notifiedMembers.isEmpty()) {
-                bookNotificationMembers.remove(bookId);
-            }
+        // If no copies available -> hide notifications (per your requirement)
+        if (book.getAvailableCopies() == 0) {
+            bookNotificationMembers.remove(bookId);
             return;
         }
 
-        // Iterate waiting queue in order and add eligible members to notifiedMembers
+        // Build top-N notified set from the front of the waiting queue (skip inactive/non-existing)
+        LinkedHashSet<Long> notifiedMembers = new LinkedHashSet<>();
         Iterator<Long> iterator = waitingQueue.iterator();
-        while (iterator.hasNext() && remainingToNotify > 0) {
+        while (iterator.hasNext() && notifiedMembers.size() < NOTIFY_LIMIT) {
             Long memberId = iterator.next();
 
-            // Remove inactive or non-existing members from the queue
+            // Drop invalid members from the queue
             if (!activeUsers.contains(memberId) || !memberRepository.existsById(memberId)) {
                 iterator.remove();
                 updateMemberWaitingBooks(memberId, bookId, false);
@@ -155,28 +140,20 @@ public class LibraryService {
                 continue;
             }
 
-            // If already notified, skip counting them again
-            if (notifiedMembers.contains(memberId)) {
-                continue;
-            }
-
-            // Add to notifiedMembers (this is the "notify admin / notify user" action)
             notifiedMembers.add(memberId);
-            remainingToNotify--;
         }
 
-        // Clean up empty structures
-        if (waitingQueue.isEmpty()) {
-            bookWaitingQueues.remove(bookId);
-        }
         if (notifiedMembers.isEmpty()) {
             bookNotificationMembers.remove(bookId);
         } else {
-            // ensure we write back the possibly-updated notifiedMembers
             bookNotificationMembers.put(bookId, notifiedMembers);
         }
-    }
 
+        // Clean up empty queue
+        if (waitingQueue.isEmpty()) {
+            bookWaitingQueues.remove(bookId);
+        }
+    }
 
     // User enters library - O(1)
     public void userEntersLibrary(Long memberId) {
@@ -222,8 +199,8 @@ public class LibraryService {
 
         removeDurationTrackerByMemberId(memberId);
     }
-    @Transactional
 
+    @Transactional
     private void startReadingActivity(Member member, Book book, Duration duration) {
         ReadingActivity activity = new ReadingActivity(
                 book,
@@ -236,7 +213,6 @@ public class LibraryService {
         bookRepository.save(book);
         readingActivityRepository.save(activity);
     }
-
 
     // O(Q) - but only called when member joins queue
     private long getMemberQueuePosition(LinkedHashSet<Long> queue, Long memberId) {
@@ -252,7 +228,6 @@ public class LibraryService {
 
     // Request book - O(1) for most operations
     @Transactional
-
     public BookBorrowResponse requestBook(Long memberId, Long bookId, Duration duration) {
         if (!activeUsers.contains(memberId)) {
             return new BookBorrowResponse(false, "User not in library");
@@ -302,6 +277,9 @@ public class LibraryService {
             // Compute rank - O(Q) but could be optimized further if needed
             long rank = getMemberQueuePosition(waitingQueue, memberId);
 
+            // After queue changes, recompute notifications for this book
+            refillNotifications(bookId);
+
             return new BookBorrowResponse(false,
                     "Book not available. " + message + " You are in waiting list.",
                     rank);
@@ -309,8 +287,6 @@ public class LibraryService {
             lock.unlock();
         }
     }
-
-
 
     // Public check waiting queue - locks then fills notifications
     private void checkWaitingQueue(Long bookId) {
@@ -322,9 +298,6 @@ public class LibraryService {
             lock.unlock();
         }
     }
-
-
-
 
     // Return book - O(1) for queue operations
     @Transactional
@@ -343,9 +316,8 @@ public class LibraryService {
         }
     }
 
-    // Admin approves next user - O(1) for queue operations
-    @Transactional
 
+    @Transactional
     public BookBorrowResponse approveNextReader(Long bookId, Long memberId) {
         Lock lock = getBookLock(bookId);
         lock.lock();
@@ -370,21 +342,20 @@ public class LibraryService {
 
                         LinkedHashSet<Long> notifiedMembers = bookNotificationMembers.get(bookId);
                         if (notifiedMembers != null) {
-                            boolean removed = notifiedMembers.remove(memberId);
-                            if (notifiedMembers.isEmpty()) {
-                                bookNotificationMembers.remove(bookId);
-                            } else if (removed) {
-                                // If we removed a notified member, promote next candidate (while lock held)
-                                refillNotifications(bookId);
-                            }
+                            notifiedMembers.remove(memberId);
                         }
 
                         durationTracker.remove(new BookMemberDTO(bookId, memberId));
 
-                        // Clean up empty queue
-                        if (waitingQueue.isEmpty()) {
-                            bookWaitingQueues.remove(bookId);
+                        // If no copies left after assignment -> hide notifications entirely
+                        if (book.getAvailableCopies() == 0) {
+                            bookNotificationMembers.remove(bookId);
+                        } else {
+                            // otherwise, recompute the top-3 notified candidates for this book
+                            refillNotifications(bookId);
                         }
+
+                        if (waitingQueue.isEmpty()) bookWaitingQueues.remove(bookId);
 
                         return new BookBorrowResponse(true,
                                 "Book " + book.getTitle() + " assigned successfully to " + member.getName());
@@ -399,7 +370,7 @@ public class LibraryService {
         }
     }
 
-    // Get admin notifications - only up to available copies per book
+    // Get admin notifications - only up to NOTIFY_LIMIT per book because refillNotifications enforces it
     public List<Notification> getAdminNotifications() {
         List<Notification> notifications = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
@@ -410,15 +381,11 @@ public class LibraryService {
             if (book == null) continue;
 
             LinkedHashSet<Long> notifiedSet = entry.getValue();
-            int allowed = book.getAvailableCopies();
-            int count = 0;
-
+            // notifiedSet already limited to NOTIFY_LIMIT by refillNotifications
             for (Long memberId : notifiedSet) {
-                if (count >= allowed) break;
                 Member member = memberRepository.findById(memberId).orElse(null);
                 if (member != null && activeUsers.contains(memberId)) {
                     notifications.add(new Notification(book, member, now));
-                    count++;
                 }
             }
         }
