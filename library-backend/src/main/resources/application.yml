@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: library
+
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/library?allowPublicKeyRetrieval=true&useSSL=false
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:root}
+
+  jpa:
+    hibernate:
+      ddl-auto: ${MYSQL_STRATEGY:create}
+
+server:
+  port: ${SERVER_PORT:9090}
