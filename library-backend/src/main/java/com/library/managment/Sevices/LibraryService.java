@@ -1,6 +1,7 @@
 package com.library.managment.Sevices;
 
 import com.library.managment.dto.BookBorrowResponse;
+import com.library.managment.dto.BookMemberDTO;
 import com.library.managment.model.Book;
 import com.library.managment.model.Member;
 import com.library.managment.model.Notification;
@@ -13,17 +14,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Service
 public class LibraryService {
-
-    // In-memory storage for quick access
-    private final Set<Long> activeUsers = new HashSet<>();
-    private final Map<Long, Queue<Long>> bookWaitingQueues = new HashMap<>(); // bookId -> queue of memberIds
-    private final Queue<Notification> adminNotifications = new LinkedList<>();
 
     @Autowired
     private BookRepository bookRepository;
@@ -33,6 +29,14 @@ public class LibraryService {
 
     @Autowired
     private ReadingActivityRepository readingActivityRepository;
+
+    // In-memory storage for quick access
+    private final Set<Long> activeUsers = new HashSet<>();
+    private final Map<Long, Queue<Long>> bookWaitingQueues = new HashMap<>(); // bookId -> queue of memberIds
+    private  final Map<BookMemberDTO,Duration> durationTracker = new HashMap<>();
+    private final Queue<Notification> adminNotifications = new LinkedList<>();
+
+
 
 
     @PostConstruct
@@ -45,8 +49,8 @@ public class LibraryService {
         System.out.println(activeUsers);
     }
 
-    public Set<Long> getActiveUsers() {
-        return activeUsers;
+    public void removeDurationTrackerByMemberId(Long memberId) {
+        durationTracker.keySet().removeIf(key -> key.getMemberId().equals(memberId));
     }
 
 
@@ -57,6 +61,7 @@ public class LibraryService {
         activeUsers.clear();
         bookWaitingQueues.clear();
         adminNotifications.clear();
+        durationTracker.clear();
         // update db
         for (Member m : memberRepository.findAll()) {
             m.setActive(false);
@@ -76,25 +81,26 @@ public class LibraryService {
 
         // Remove from all waiting queues
         for (Queue<Long> queue : bookWaitingQueues.values()) {
+
+
             queue.remove(memberId);
         }
+        removeDurationTrackerByMemberId(memberId);
 
         // Update admin notifications
-        updateAdminNotifications();
+        adminNotifications.removeIf(notification -> Objects.equals(notification.getMember().getId(), memberId));
     }
 
-    private void startReadingActivity(Member member, Book book) {
+    private void startReadingActivity(Member member, Book book, Duration duration) {
         ReadingActivity activity = new ReadingActivity(book, member, LocalDateTime.now()
-                , LocalDateTime.now().plusHours(4));
+                , LocalDateTime.now().plus(duration));
         book.setAvailableCopies(book.getAvailableCopies() - 1);
         bookRepository.save(book);
         readingActivityRepository.save(activity);
 
     }
 
-    // Request to read a book
-    public BookBorrowResponse requestBook(Long memberId, Long bookId) {
-        // quick prechecks
+    public BookBorrowResponse requestBook(Long memberId, Long bookId, Duration duration) {
         if (!activeUsers.contains(memberId)) {
             return new BookBorrowResponse(false, "User not in library");
         }
@@ -102,52 +108,95 @@ public class LibraryService {
             return new BookBorrowResponse(true, "You have already borrowed the book");
         }
 
-        // load entities (throw meaningful exceptions if not found)
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow();
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow();
+        Book book = bookRepository.findById(bookId).orElseThrow();
+        Member member = memberRepository.findById(memberId).orElseThrow();
 
-        // ensure a thread-safe queue exists for this book
         Queue<Long> queue = bookWaitingQueues.computeIfAbsent(bookId, k -> new LinkedList<>());
         Long head = queue.peek();
         String message = "";
+
+        // If someone else is at head, tell them to wait
         if (head != null && !Objects.equals(head, memberId)) {
             message = "Someone else requested this book first, you'll get your turn soon!";
         } else if (book.getAvailableCopies() > 0 && (Objects.equals(head, memberId) || queue.isEmpty())) {
-
-            queue.poll();
-            startReadingActivity(member, book);
+            // If member is head or no queue, assign immediately
+            if (Objects.equals(head, memberId)) {
+                queue.poll(); // remove head if it was them
+            }
+            // remove any stored duration for this key (we're assigning now)
+            durationTracker.remove(new BookMemberDTO(bookId, memberId));
+            startReadingActivity(member, book, Objects.requireNonNullElse(duration, Duration.ofHours(1)));
             return new BookBorrowResponse(true,
                     "Book " + book.getTitle() + " assigned successfully to " + member.getName());
-
         }
 
         // CASE 2 — no copies available: add to waiting list if not already present
         if (!queue.contains(memberId)) {
             queue.add(memberId);
+            durationTracker.put(new BookMemberDTO(bookId, memberId),
+                    Objects.requireNonNullElse(duration, Duration.ofHours(1)));
         }
-        // Find user rank in queue
-        long rank = 1;
-        boolean exists = false;
 
+        // compute rank
+        long rank = 1;
         for (Long id : queue) {
-            if (id.equals(memberId)) {
-                exists = true;
-                break;   // we found the member → stop early
-            }
+            if (id.equals(memberId)) break;
             rank++;
         }
 
-        if (!exists) {
-            queue.add(memberId);
-            rank = queue.size();  // member added to the end
-        }
-
         return new BookBorrowResponse(false,
-                "Book not available." + message + "You are in waiting list.",
+                "Book not available. " + message + " You are in waiting list.",
                 rank);
     }
+
+    private void checkWaitingQueue(Long bookId) {
+        Queue<Long> queue = bookWaitingQueues.get(bookId);
+        if (queue == null || queue.isEmpty()) return;
+
+        // fetch book once and read how many copies are available
+        Book book = bookRepository.findById(bookId).orElseThrow();
+        int available = book.getAvailableCopies();
+        if (available <= 0) return;
+
+        // iterate safely so we can remove inactive entries
+        Iterator<Long> iter = queue.iterator();
+        while (iter.hasNext() && available > 0) {
+            Long nextMemberId = iter.next();
+            if (nextMemberId == null) continue;
+
+            // remove inactive members from the queue
+            if (!activeUsers.contains(nextMemberId)) {
+                iter.remove();
+                removeDurationTrackerByMemberId(nextMemberId);
+                continue;
+            }
+
+            // ensure member still exists
+            Member m = memberRepository.findById(nextMemberId).orElse(null);
+            if (m == null) {
+                iter.remove();
+                removeDurationTrackerByMemberId(nextMemberId);
+                continue;
+            }
+
+            // add admin notification if not already present
+            boolean exists = adminNotifications.stream()
+                    .anyMatch(n ->
+                            n.getBook().getId().equals(bookId)
+                                    && n.getMember().getId().equals(nextMemberId)
+                    );
+
+            if (!exists) {
+                Notification notification = new Notification(book, m, LocalDateTime.now());
+                adminNotifications.add(notification);
+                available--; // count this notification toward available copies
+            }
+
+            // do NOT remove the candidate from the queue here — admin will approve and remove them
+        }
+    }
+
+
 
     // Return book
     public void returnBook(Long readingActivityId) {
@@ -166,46 +215,27 @@ public class LibraryService {
     }
 
 
-    private void checkWaitingQueue(Long bookId) {
-        Queue<Long> queue = bookWaitingQueues.get(bookId);
-        if (queue != null && !queue.isEmpty()) {
-            Long nextMemberId = queue.peek(); // Don't remove until admin confirms
-
-            if (activeUsers.contains(nextMemberId)) {
-                // Create notification for admin
-                Book b = bookRepository.findById(bookId).orElseThrow();
-                Member m = memberRepository.findById(nextMemberId).orElseThrow();
-                Notification notification = new Notification(b, m, LocalDateTime.now());
-                adminNotifications.add(notification);
-            } else {
-                queue.poll(); // Remove inactive user
-                checkWaitingQueue(bookId); // Check next in queue
-            }
-        }
-    }
 
 
-    private void updateAdminNotifications() {
-        // Remove notifications for users who left
 
-        // safe removal during iteration
-        adminNotifications.removeIf(notification ->
-                !activeUsers.contains(notification.getMember().getId()));
 
-    }
 
     // Admin approves next user
-    public BookBorrowResponse approveNextReader(Long bookId) {
+    public BookBorrowResponse approveNextReader(Long bookId,Long memberId ) {
         Queue<Long> queue = bookWaitingQueues.get(bookId);
         Book book = bookRepository.findById(bookId).orElseThrow();
         if (queue != null && !queue.isEmpty()) {
-            Long memberId = queue.poll();
-            if (activeUsers.contains(memberId)) {
+
+            if (queue.contains(memberId)  && activeUsers.contains(memberId)) {
 
                 Member member = memberRepository.findById(memberId).orElseThrow();
                 if (book.getAvailableCopies() > 0) {
-                    startReadingActivity(member, book);
-                    adminNotifications.removeIf(n -> Objects.equals(n.getBook().getId(), bookId));
+                    startReadingActivity(member, book,durationTracker.get(new BookMemberDTO(bookId,memberId)));
+                    queue.removeIf(id-> Objects.equals(id,memberId));
+                    adminNotifications.removeIf(n ->
+                            (Objects.equals(n.getBook().getId(), bookId)
+                                    && Objects.equals(n.getMember().getId(),memberId ) ));
+                    durationTracker.remove(new BookMemberDTO(bookId,memberId));
 
                     return new BookBorrowResponse(true,
                             "Book " + book.getTitle() + " assigned successfully to " + member.getName());

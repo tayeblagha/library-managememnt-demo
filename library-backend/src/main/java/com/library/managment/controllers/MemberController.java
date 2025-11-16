@@ -16,6 +16,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -166,10 +168,20 @@ public class MemberController {
 
 
     // Request a book
-    @PostMapping("/request/{memberId}/{bookId}")
-    public BookBorrowResponse requestBook(@PathVariable Long memberId, @PathVariable Long bookId) {
-        return libraryService.requestBook(memberId, bookId);
+    @PostMapping("/read/{memberId}/{bookId}")
+    public BookBorrowResponse readBook(@PathVariable Long memberId, @PathVariable Long bookId) {
+        return libraryService.requestBook(memberId, bookId,Duration.ofHours(6));
     }
+    // Request a book
+    @PostMapping("/borrow/{memberId}/{bookId}")
+    public BookBorrowResponse borrowBook(
+            @PathVariable Long memberId,
+            @PathVariable Long bookId,
+            @RequestParam long duration) {
+
+        return libraryService.requestBook(memberId, bookId, Duration.ofHours(duration));
+    }
+
 
     // Return a book
     @PostMapping("/return/{activityId}")

@@ -9,7 +9,8 @@ import Swal from "sweetalert2";
 const Library = () => {
   const [notifications, setNotifications] = useState<NotificationDTO[]>([]);
   const [expiredBooks, setExpiredBooks] = useState<ReadingActivity[]>([]);
-  const [approving, setApproving] = useState<number | null>(null);
+  // use composite key "bookId-memberId" so we can disable per specific request
+  const [approving, setApproving] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
@@ -40,6 +41,7 @@ const Library = () => {
 
   const handleApprove = async (
     bookId: number,
+    memberId: number,
     memberName: string,
     bookTitle: string
   ) => {
@@ -59,25 +61,35 @@ const Library = () => {
       return;
     }
 
-    setApproving(bookId);
+    const key = `${bookId}-${memberId}`;
+    setApproving(key);
     try {
-      const result = await LibraryService.approveNextReader(bookId);
-      if (result.success) {
-        setNotifications((prev) => prev.filter((n) => n.book.id !== bookId));
-        // Show success message
+      // pass memberId as second argument
+      const res = await LibraryService.approveNextReader(bookId, memberId);
+      if (res.success) {
+        // remove only the notification matching both bookId and memberId
+        setNotifications((prev) =>
+          prev.filter((n) => !(n.book.id === bookId && n.member.id === memberId))
+        );
+        // also remove expiredBooks entry if it matches both bookId and memberId
+        setExpiredBooks((prev) =>
+          prev.filter((a) => !(a.book.id === bookId && a.member.id === memberId))
+        );
+
         await Swal.fire({
           title: "Approved!",
           text: `Book "${bookTitle}" has been approved for the next reader.`,
           icon: "success",
           confirmButtonColor: "#10B981",
         });
-        // refresh to get updated expiredBooks or other state from server
+
+        // refresh to get updated expiredBooks or other server state
         fetchData();
       } else {
-        setError(result.message);
+        setError(res.message);
         await Swal.fire({
           title: "Error!",
-          text: result.message,
+          text: res.message,
           icon: "error",
           confirmButtonColor: "#EF4444",
         });
@@ -127,59 +139,66 @@ const Library = () => {
             <p>No pending notifications</p>
           </div>
         ) : (
-          notifications.map((n) => (
-            <div
-              key={n.book.id + "-" + n.member.id}
-              className="p-4 border-b last:border-0 hover:bg-gray-50"
-            >
-              <div className="flex justify-between items-center">
-                <div className="flex gap-3">
-                  {n.book.imageUrl && (
-                    <img
-                      src={n.book.imageUrl}
-                      alt={n.book.title}
-                      className="w-12 h-16 rounded object-cover"
-                    />
-                  )}
+          notifications.map((n) => {
+            const compositeKey = `${n.book.id}-${n.member.id}`;
+            return (
+              <div
+                key={compositeKey}
+                className="p-4 border-b last:border-0 hover:bg-gray-50"
+              >
+                <div className="flex justify-between items-center">
+                  <div className="flex gap-3">
+                    {n.book.imageUrl && (
+                      <img
+                        src={n.book.imageUrl}
+                        alt={n.book.title}
+                        className="w-12 h-16 rounded object-cover"
+                      />
+                    )}
 
-                  <div>
-                    <p className="font-medium">{n.book.title}</p>
-                    <p className="text-sm text-gray-600">{n.book.author}</p>
+                    <div>
+                      <p className="font-medium">{n.book.title}</p>
+                      <p className="text-sm text-gray-600">{n.book.author}</p>
 
-                    <div className="text-sm text-gray-500 mt-1 flex gap-3">
-                      <span>
-                        <i className="fa-solid fa-user"></i> {n.member.name}
-                      </span>
-                      <span>
-                        <i className="fa-solid fa-clock"></i>{" "}
-                        {formatTime(n.timestamp)}
-                      </span>
+                      <div className="text-sm text-gray-500 mt-1 flex gap-3">
+                        <span>
+                          <i className="fa-solid fa-user"></i> {n.member.name}
+                        </span>
+                        <span>
+                          <i className="fa-solid fa-clock"></i>{" "}
+                          {formatTime(n.timestamp)}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <button
-                  onClick={() =>
-                    n.book.id !== undefined &&
-                    handleApprove(n.book.id, n.member.name, n.book.title)
-                  }
-                  disabled={approving === n.book.id}
-                  className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 disabled:bg-green-300 flex items-center gap-2"
-                >
-                  {approving === n.book.id ? (
-                    <>
-                      <i className="fa-solid fa-spinner animate-spin"></i>
-                      Approving...
-                    </>
-                  ) : (
-                    <>
-                      <i className="fa-solid fa-check"></i> Approve
-                    </>
-                  )}
-                </button>
+                  <button
+                    onClick={() =>
+                      handleApprove(
+                        n.book.id as number,
+                        n.member.id as number,
+                        n.member.name,
+                        n.book.title
+                      )
+                    }
+                    disabled={approving === compositeKey}
+                    className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 disabled:bg-green-300 flex items-center gap-2"
+                  >
+                    {approving === compositeKey ? (
+                      <>
+                        <i className="fa-solid fa-spinner animate-spin"></i>
+                        Approving...
+                      </>
+                    ) : (
+                      <>
+                        <i className="fa-solid fa-check"></i> Approve
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
@@ -240,7 +259,7 @@ const Library = () => {
 
       <div className="text-center text-gray-500 text-sm">
         <i className="fa-solid fa-circle-dot text-green-500 animate-pulse"></i>{" "}
-        Auto-refresh every 5s
+        Auto-refresh every 3s
       </div>
     </div>
   );

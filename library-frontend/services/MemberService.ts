@@ -44,13 +44,24 @@ getBorrowedBooks: async (memberId: number): Promise<ReadingActivity[]> => {
   return response.data;
 },
 
-// Borrow (request a book)
-requestBook: async (memberId: number, bookId: number): Promise<BookBorrowResponse> => {
-      const response = await axios.post(`${API_URL}/request/${memberId}/${bookId}`, null, {
-    
-  });
+// Read a book (6 hours fixed)
+readBook: async (memberId: number, bookId: number): Promise<BookBorrowResponse> => {
+  const response = await axios.post(
+    `${API_URL}/read/${memberId}/${bookId}`,
+    null
+  );
   return response.data;
 },
+
+borrowBook: async (memberId: number, bookId: number, duration: number): Promise<BookBorrowResponse> => {
+  const response = await axios.post(
+    `${API_URL}/borrow/${memberId}/${bookId}?duration=${duration}`
+  );
+
+  return response.data;
+},
+
+
 
 // Return book
 returnBook: async (activityId: number): Promise<BookBorrowResponse> => {

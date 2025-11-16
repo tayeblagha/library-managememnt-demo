@@ -28,8 +28,8 @@ return res.data;
 * Approve the next reader for a given bookId. The backend should handle picking/polling the queue
 * Expected return: { success: boolean, message: string, rank?: number }
 */
-async approveNextReader(bookId: number):Promise<BookBorrowResponse> {
-const res = await axios.post(`${API_URL}/approve/${bookId}`);
+async approveNextReader(bookId: number,memberId:number):Promise<BookBorrowResponse> {
+const res = await axios.post(`${API_URL}/approve/${bookId}/${memberId}`);
 return res.data;
 },
 

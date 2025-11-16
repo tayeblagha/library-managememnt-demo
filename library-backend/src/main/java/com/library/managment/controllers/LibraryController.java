@@ -31,9 +31,9 @@ public class LibraryController {
 
 
     // Approve next reader for a book
-    @PostMapping("/approve/{bookId}")
-    public BookBorrowResponse approveReader(@PathVariable Long bookId) {
-       return  libraryService.approveNextReader(bookId);
+    @PostMapping("/approve/{bookId}/{memberId}")
+    public BookBorrowResponse approveReader(@PathVariable Long bookId,@PathVariable Long memberId) {
+       return  libraryService.approveNextReader(bookId,memberId);
 
     }
 
