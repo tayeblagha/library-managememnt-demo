@@ -25,7 +25,7 @@ public class LibraryController {
 
     // Admin: view notifications
     @GetMapping("/notifications")
-    public Queue<Notification> getNotifications() {
+    public List<Notification> getNotifications() {
         return libraryService.getAdminNotifications();
     }
 

@@ -35,8 +35,8 @@ public class MemberController {
     private ReadingActivityRepository readingActivityRepository;
     @Autowired
     private LibraryService libraryService;
-    public static final String BASE_URL = "https://raw.githubusercontent.com/smoothcoode/Image/refs/heads/main/members/";
-
+    private static final String BASE_URL = "https://raw.githubusercontent.com/smoothcoode/Image/refs/heads/main/members/";
+    private static final long DEFAULT_READING_HOURS = 6;
     // Get all members
     @GetMapping
     public Page<Member> getAllMembersPageable(
@@ -170,7 +170,7 @@ public class MemberController {
     // Request a book
     @PostMapping("/read/{memberId}/{bookId}")
     public BookBorrowResponse readBook(@PathVariable Long memberId, @PathVariable Long bookId) {
-        return libraryService.requestBook(memberId, bookId,Duration.ofHours(6));
+        return libraryService.requestBook(memberId, bookId,Duration.ofHours(DEFAULT_READING_HOURS));
     }
     // Request a book
     @PostMapping("/borrow/{memberId}/{bookId}")

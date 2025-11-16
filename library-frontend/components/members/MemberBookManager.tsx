@@ -270,8 +270,8 @@ export default function MemberBookManager({
 
             {/* If borrow, show date picker */}
             {mode === "borrow" && (
-              <div className="ml-auto">
-                <label className="text-xs block mb-1">Return date</label>
+              <div >
+                  
                 <input
                   type="date"
                   value={returnDate}
@@ -320,7 +320,7 @@ export default function MemberBookManager({
               {mode === "read" ? (
                 <><i className="fa-solid fa-book-medical mr-2"></i>Read</>
               ) : (
-                <><i className="fa-solid fa-hand-holding-book mr-2"></i>Borrow</>
+                <><i className="fa-solid fa-book-medical mr-2"></i>Borrow</>
               )}
             </button>
           </div>
