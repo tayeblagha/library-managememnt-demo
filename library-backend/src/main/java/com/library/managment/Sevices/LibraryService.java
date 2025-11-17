@@ -214,17 +214,6 @@ public class LibraryService {
         readingActivityRepository.save(activity);
     }
 
-    // O(Q) - but only called when member joins queue
-    private long getMemberQueuePosition(LinkedHashSet<Long> queue, Long memberId) {
-        long position = 1;
-        for (Long id : queue) {
-            if (id.equals(memberId)) {
-                return position;
-            }
-            position++;
-        }
-        return position;
-    }
 
     // Request book - O(1) for most operations
     @Transactional
@@ -270,12 +259,20 @@ public class LibraryService {
             if (!waitingQueue.contains(memberId)) { // O(1)
                 waitingQueue.add(memberId); // O(1)
                 updateMemberWaitingBooks(memberId, bookId, true);
-                durationTracker.put(new BookMemberDTO(bookId, memberId),
-                        Objects.requireNonNullElse(duration, Duration.ofHours(1)));
+
             }
+            durationTracker.put(new BookMemberDTO(bookId, memberId),
+                    Objects.requireNonNullElse(duration, Duration.ofHours(1)));
 
             // Compute rank - O(Q) but could be optimized further if needed
-            long rank = getMemberQueuePosition(waitingQueue, memberId);
+            long rank = 1;
+
+            for (Long id : waitingQueue) {
+                if (id.equals(memberId)) {
+                    break;
+                }
+                rank++;
+            }
 
             // After queue changes, recompute notifications for this book
             refillNotifications(bookId);
