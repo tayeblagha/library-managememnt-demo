@@ -1,6 +1,7 @@
 package com.library.managment.controllers;
 
 import com.library.managment.model.Book;
+import com.library.managment.model.Member;
 import com.library.managment.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -24,10 +25,13 @@ public class BookController {
 
     public static final String BASE_URL = "https://raw.githubusercontent.com/smoothcoode/Image/refs/heads/main/books/";
 
-
+    @GetMapping
+    public List<Book> getAllBooks(){
+        return   bookRepository.findAll();
+    }
     // Get all books
 
-    @GetMapping
+    @GetMapping("/pageable")
     public Page<Book> getAllBooksPageable(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "9") int size,

@@ -44,7 +44,7 @@ public class LibraryService {
     private final Map<Long, LinkedHashSet<Long>> bookWaitingQueues = new ConcurrentHashMap<>();
 
     // Track durations for waiting members
-    private final Map<BookMemberDTO, Duration> durationTracker = new ConcurrentHashMap<>();
+    private final Map<BookMemberDTO, Integer> durationTracker = new HashMap<>();
 
     // Efficient notification tracking - BookId -> Ordered Set (LinkedHashSet) of notified member IDs
     private final Map<Long, LinkedHashSet<Long>> bookNotificationMembers = new ConcurrentHashMap<>();
@@ -58,7 +58,7 @@ public class LibraryService {
     @PostConstruct
     public void initializeActiveMembers() {
         System.out.println("🚀 Initializing active members on first run...");
-        List<Member> activeMembers = memberRepository.findByActiveTrue();
+        List<Member> activeMembers = memberRepository.findByIsActiveTrue();
         for (Member m : activeMembers) {
             activeUsers.add(m.getId());
         }
@@ -217,7 +217,7 @@ public class LibraryService {
 
     // Request book - O(1) for most operations
     @Transactional
-    public BookBorrowResponse requestBook(Long memberId, Long bookId, Duration duration) {
+    public BookBorrowResponse requestBook(Long memberId, Long bookId, int duration /* in hours*/) {
         if (!activeUsers.contains(memberId)) {
             return new BookBorrowResponse(false, "User not in library");
         }
@@ -250,7 +250,7 @@ public class LibraryService {
                 }
 
                 durationTracker.remove(new BookMemberDTO(bookId, memberId));
-                startReadingActivity(member, book, Objects.requireNonNullElse(duration, Duration.ofHours(1)));
+                startReadingActivity(member, book, Duration.ofHours(duration));
                 return new BookBorrowResponse(true,
                         "Book " + book.getTitle() + " assigned successfully to " + member.getName());
             }
@@ -261,8 +261,7 @@ public class LibraryService {
                 updateMemberWaitingBooks(memberId, bookId, true);
 
             }
-            durationTracker.put(new BookMemberDTO(bookId, memberId),
-                    Objects.requireNonNullElse(duration, Duration.ofHours(1)));
+            durationTracker.put(new BookMemberDTO(bookId, memberId), duration);
 
             // Compute rank - O(Q) but could be optimized further if needed
             long rank = 1;
@@ -328,10 +327,10 @@ public class LibraryService {
                     Member member = memberRepository.findById(memberId).orElseThrow();
 
                     if (book.getAvailableCopies() > 0) {
-                        Duration duration = durationTracker.getOrDefault(
-                                new BookMemberDTO(bookId, memberId), Duration.ofHours(1));
+                        long duration = durationTracker.getOrDefault(
+                                new BookMemberDTO(bookId, memberId), 1);
 
-                        startReadingActivity(member, book, duration);
+                        startReadingActivity(member, book, Duration.ofHours(duration));
 
                         // Clean up all tracking for this member-book pair
                         waitingQueue.remove(memberId);
@@ -382,7 +381,8 @@ public class LibraryService {
             for (Long memberId : notifiedSet) {
                 Member member = memberRepository.findById(memberId).orElse(null);
                 if (member != null && activeUsers.contains(memberId)) {
-                    notifications.add(new Notification(book, member, now));
+                    notifications.add(new Notification(book, member, durationTracker.getOrDefault(
+                            new BookMemberDTO(bookId, memberId), 1)));
                 }
             }
         }

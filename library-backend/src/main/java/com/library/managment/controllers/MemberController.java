@@ -17,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,9 +35,14 @@ public class MemberController {
     @Autowired
     private LibraryService libraryService;
     private static final String BASE_URL = "https://raw.githubusercontent.com/smoothcoode/Image/refs/heads/main/members/";
-    private static final long DEFAULT_READING_HOURS = 6;
-    // Get all members
+    private static final int DEFAULT_READING_HOURS = 6;
+
     @GetMapping
+    public List<Member> getAllMembers(){
+       return   memberRepository.findAll();
+    }
+    // Get Pageable members
+    @GetMapping("/pageable")
     public Page<Member> getAllMembersPageable(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "9") int size,
@@ -54,7 +58,7 @@ public class MemberController {
 
 
     // Get all members
-    @GetMapping("/active")
+    @GetMapping("/pageable/active")
     public Page<Member> getAllActiveMembersPageable(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "9") int size,
@@ -62,9 +66,9 @@ public class MemberController {
         Pageable pageable = PageRequest.of(page, size);
 
         if (name != null && !name.trim().isEmpty()) {
-            return memberRepository.findByNameContainingIgnoreCaseAndActiveTrue(name, pageable);
+            return memberRepository.findByNameContainingIgnoreCaseAndIsActiveTrue(name, pageable);
         } else {
-            return memberRepository.findByActiveTrue(pageable);
+            return memberRepository.findByIsActiveTrue(pageable);
         }
     }
 
@@ -170,16 +174,16 @@ public class MemberController {
     // Request a book
     @PostMapping("/read/{memberId}/{bookId}")
     public BookBorrowResponse readBook(@PathVariable Long memberId, @PathVariable Long bookId) {
-        return libraryService.requestBook(memberId, bookId,Duration.ofHours(DEFAULT_READING_HOURS));
+        return libraryService.requestBook(memberId, bookId,DEFAULT_READING_HOURS);
     }
     // Request a book
     @PostMapping("/borrow/{memberId}/{bookId}")
     public BookBorrowResponse borrowBook(
             @PathVariable Long memberId,
             @PathVariable Long bookId,
-            @RequestParam long duration) {
+            @RequestParam int duration) {
 
-        return libraryService.requestBook(memberId, bookId, Duration.ofHours(duration));
+        return libraryService.requestBook(memberId, bookId, duration);
     }
 
 

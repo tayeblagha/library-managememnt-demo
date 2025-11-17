@@ -5,5 +5,5 @@ export type NotificationDTO = {
 id?: number;
 book: Book;
 member: Member;
-timestamp: string; // ISO string
+duration: number; // number of hours
 };

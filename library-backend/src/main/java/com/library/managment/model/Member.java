@@ -12,7 +12,7 @@ public class Member {
     private Long id;
     private String name;
     private String imageUrl;
-    private Boolean active=true;
+    private Boolean isActive=true;
 
     // constructors, getters, setters
 
@@ -41,10 +41,10 @@ public class Member {
     }
 
     public Boolean getActive() {
-        return active;
+        return isActive;
     }
 
     public void setActive(Boolean active) {
-        this.active = active;
+        isActive = active;
     }
 }

@@ -11,13 +11,13 @@ const API_URL = process.env.NEXT_PUBLIC_BACKEND_HOST  +"/member";
 export const MemberService = {
   
   searchMembersByTitle: async (name: string, page: number, size: number): Promise<MemberResponse> => {
-    const response = await axios.get(`${API_URL}`, {
+    const response = await axios.get(`${API_URL}/pageable`, {
       params: { name, page, size },
     });
     return response.data;
   },
   searchActiveMembersByTitle: async (name: string, page: number, size: number): Promise<MemberResponse> => {
-    const response = await axios.get(`${API_URL}/active`, {
+    const response = await axios.get(`${API_URL}/pageable/active`, {
       params: { name, page, size },
     });
     return response.data;

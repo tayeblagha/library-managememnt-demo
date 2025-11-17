@@ -109,6 +109,14 @@ const Library = () => {
 
   const formatTime = (t: string) => new Date(t).toLocaleTimeString();
 
+  // --- NEW HELPERS ---
+  const computeExpectedReturn = (hours: number | undefined | null) => {
+    const hrs = typeof hours === "number" && !isNaN(hours) ? hours : 0;
+    return new Date(Date.now() + hrs * 60 * 60 * 1000);
+  };
+
+  const formatDateTime = (d: Date) => d.toLocaleString();
+
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6">
       {error && (
@@ -141,6 +149,7 @@ const Library = () => {
         ) : (
           notifications.map((n) => {
             const compositeKey = `${n.book.id}-${n.member.id}`;
+            const expectedReturn = computeExpectedReturn(n.duration);
             return (
               <div
                 key={compositeKey}
@@ -158,15 +167,24 @@ const Library = () => {
 
                     <div>
                       <p className="font-medium">{n.book.title}</p>
-                      <p className="text-sm text-gray-600">{n.book.author}</p>
 
-                      <div className="text-sm text-gray-500 mt-1 flex gap-3">
-                        <span>
-                          <i className="fa-solid fa-user"></i> {n.member.name}
+                      <div className="text-sm text-gray-500 mt-1 flex gap-3 items-center">
+                        <span className="flex items-center gap-2">
+                          <img
+                            src={n.member.imageUrl}
+                            alt={n.member.name}
+                            className="w-8 h-8 rounded-full object-cover"
+                          />
+                          {n.member.name}
                         </span>
-                        <span>
-                          <i className="fa-solid fa-clock"></i>{" "}
-                          {formatTime(n.timestamp)}
+
+                        {/* NEW: expected return date display */}
+                        <span className="ml-2 text-sm text-gray-600">
+                          <i className="fa-solid fa-calendar-days mr-1"></i>
+                          Expected:{" "}
+                          <span className="font-medium">
+                            {formatDateTime(expectedReturn)}
+                          </span>
                         </span>
                       </div>
                     </div>
@@ -182,6 +200,7 @@ const Library = () => {
                       )
                     }
                     disabled={approving === compositeKey}
+                    aria-disabled={approving === compositeKey}
                     className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 disabled:bg-green-300 flex items-center gap-2"
                   >
                     {approving === compositeKey ? (

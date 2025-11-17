@@ -1,0 +1,822 @@
+{
+	"info": {
+		"_postman_id": "e0da65a1-5e35-42b0-8bbe-c878abbf033a",
+		"name": "library-apis",
+		"description": "# 🚀 Get started here\n\nThis template guides you through CRUD operations (GET, POST, PUT, DELETE), variables, and tests.\n\n## 🔖 **How to use this template**\n\n#### **Step 1: Send requests**\n\nRESTful APIs allow you to perform CRUD operations using the POST, GET, PUT, and DELETE HTTP methods.\n\nThis collection contains each of these [request](https://learning.postman.com/docs/sending-requests/requests/) types. Open each request and click \"Send\" to see what happens.\n\n#### **Step 2: View responses**\n\nObserve the response tab for status code (200 OK), response time, and size.\n\n#### **Step 3: Send new Body data**\n\nUpdate or add new data in \"Body\" in the POST request. Typically, Body data is also used in PUT request.\n\n```\n{\n    \"name\": \"Add your name in the body\"\n}\n\n ```\n\n#### **Step 4: Update the variable**\n\nVariables enable you to store and reuse values in Postman. We have created a [variable](https://learning.postman.com/docs/sending-requests/variables/) called `base_url` with the sample request [https://postman-api-learner.glitch.me](https://postman-api-learner.glitch.me). Replace it with your API endpoint to customize this collection.\n\n#### **Step 5: Add tests in the \"Scripts\" tab**\n\nAdding tests to your requests can help you confirm that your API is working as expected. You can write test scripts in JavaScript and view the output in the \"Test Results\" tab.\n\n<img src=\"https://content.pstmn.io/fa30ea0a-373d-4545-a668-e7b283cca343/aW1hZ2UucG5n\" alt=\"\" height=\"1530\" width=\"2162\">\n\n## 💪 Pro tips\n\n- Use folders to group related requests and organize the collection.\n    \n- Add more [scripts](https://learning.postman.com/docs/writing-scripts/intro-to-scripts/) to verify if the API works as expected and execute workflows.\n    \n\n## 💡Related templates\n\n[API testing basics](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9a37a28-055b-49cd-8c7e-97494a21eb54&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[API documentation](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9c28f47-1253-44af-a2f3-20dce4da1f18&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[Authorization methods](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=31a9a6ed-4cdf-4ced-984c-d12c9aec1c27&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21783211",
+		"_collection_link": "https://smooth-code.postman.co/workspace/library-management~f5e882bd-aa02-4e12-8df2-5b311cefe24d/collection/21783211-e0da65a1-5e35-42b0-8bbe-c878abbf033a?action=share&source=collection_link&creator=21783211"
+	},
+	"item": [
+		{
+			"name": "GetPageableBooks",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/book/pageable?title=&page=0&size=10",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"book",
+						"pageable"
+					],
+					"query": [
+						{
+							"key": "title",
+							"value": ""
+						},
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "10"
+						}
+					]
+				},
+				"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+			},
+			"response": []
+		},
+		{
+			"name": "Post Book",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Successful POST request\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "  { \"title\": \"1984\", \n  \"author\": \"George Orwell\", \n  \"imageUrl\": \"1984.jpg\", \n  \"totalCopies\": 2 \n  }\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/book",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"book"
+					]
+				},
+				"description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+			},
+			"response": []
+		},
+		{
+			"name": "Batch Books",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Successful POST request\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n      { \"title\": \"The Art of War\", \"author\": \"Sun Tzu\", \"imageUrl\": \"TheArtofWar.jpg\", \"totalCopies\": 2 },\n\n      { \"title\": \"War and Peace\", \"author\": \"Leo Tolstoy\", \"imageUrl\": \"warandpeace.png\", \"totalCopies\": 3 },\n  { \"title\": \"1984\", \"author\": \"George Orwell\", \"imageUrl\": \"1984.jpg\", \"totalCopies\": 2 },\n  { \"title\": \"A Brief History of Time\", \"author\": \"Stephen Hawking\", \"imageUrl\": \"ABriefHistoryofTime.jpg\", \"totalCopies\": 3 },\n  { \"title\": \"Atomic Habits\", \"author\": \"James Clear\", \"imageUrl\": \"AtomicHabit.png\", \"totalCopies\": 1 },\n  { \"title\": \"Born a Crime\", \"author\": \"Trevor Noah\", \"imageUrl\": \"BornaCrime.jpg\", \"totalCopies\": 4 },\n  { \"title\": \"Brave New World\", \"author\": \"Aldous Huxley\", \"imageUrl\": \"BraveNewWorld.jpg\", \"totalCopies\": 2 },\n  { \"title\": \"Clean Code\", \"author\": \"Robert C. Martin\", \"imageUrl\": \"CleanCode.jpg\", \"totalCopies\": 3 },\n  { \"title\": \"Cosmos\", \"author\": \"Carl Sagan\", \"imageUrl\": \"Cosmos.jpg\", \"totalCopies\": 1 },\n  { \"title\": \"Crime and Punishment\", \"author\": \"Fyodor Dostoevsky\", \"imageUrl\": \"CrimeandPunishment.jpg\", \"totalCopies\": 2 },\n  { \"title\": \"Deep Work\", \"author\": \"Cal Newport\", \"imageUrl\": \"DeepWork.jpg\", \"totalCopies\": 3 },\n  { \"title\": \"Dune\", \"author\": \"Frank Herbert\", \"imageUrl\": \"Dune.jpg\", \"totalCopies\": 4 },\n  { \"title\": \"Educated\", \"author\": \"Tara Westover\", \"imageUrl\": \"Educated.jpg\", \"totalCopies\": 1 },\n  { \"title\": \"Flow\", \"author\": \"Mihaly Csikszentmihalyi\", \"imageUrl\": \"Flow.jpg\", \"totalCopies\": 2 },\n  { \"title\": \"Guns, Germs, and Steel\", \"author\": \"Jared Diamond\", \"imageUrl\": \"GunsGermsandSteel.jpg\", \"totalCopies\": 3 },\n  { \"title\": \"Homo Deus\", \"author\": \"Yuval Noah Harari\", \"imageUrl\": \"HomoDeus.jpg\", \"totalCopies\": 1 },\n  { \"title\": \"Hooked\", \"author\": \"Nir Eyal\", \"imageUrl\": \"Hooked.jpg\", \"totalCopies\": 2 },\n  { \"title\": \"Man’s Search for Meaning\", \"author\": \"Viktor Frankl\", \"imageUrl\": \"Man’sSearchforMeaning.jpg\", \"totalCopies\": 4 },\n  { \"title\": \"Meditations\", \"author\": \"Marcus Aurelius\", \"imageUrl\": \"Meditations.jpg\", \"totalCopies\": 3 },\n  { \"title\": \"Outliers\", \"author\": \"Malcolm Gladwell\", \"imageUrl\": \"Outliers.jpg\", \"totalCopies\": 2 },\n  { \"title\": \"Psycology of Money\", \"author\": \"Morgan Housel\", \"imageUrl\": \"PsycologyOfMoney.png\", \"totalCopies\": 4 },\n  { \"title\": \"Sapiens\", \"author\": \"Yuval Noah Harari\", \"imageUrl\": \"Sapiens.jpg\", \"totalCopies\": 3 },\n  { \"title\": \"Steve Jobs\", \"author\": \"Walter Isaacson\", \"imageUrl\": \"SteveJobs.jpg\", \"totalCopies\": 2 },\n  { \"title\": \"The 7 Habits of Highly Effective People\", \"author\": \"Stephen Covey\", \"imageUrl\": \"The7HabitsofHighlyEffectivePeople.jpg\", \"totalCopies\": 4 },\n  { \"title\": \"The Alchemist\", \"author\": \"Paulo Coelho\", \"imageUrl\": \"TheAlchemist.png\", \"totalCopies\": 1 },\n  { \"title\": \"The Art of Thinking Clearly\", \"author\": \"Rolf Dobelli\", \"imageUrl\": \"TheArtofThinkingClearly.jpg\", \"totalCopies\": 2 },\n  { \"title\": \"The Catcher in the Rye\", \"author\": \"J.D. Salinger\", \"imageUrl\": \"TheCatcherintheRye.jpg\", \"totalCopies\": 1 },\n  { \"title\": \"The Code Book\", \"author\": \"Simon Singh\", \"imageUrl\": \"TheCodeBook.jpg\", \"totalCopies\": 2 },\n  { \"title\": \"The Design of Everyday Things\", \"author\": \"Don Norman\", \"imageUrl\": \"TheDesignofEverydayThings.jpg\", \"totalCopies\": 4 },\n  { \"title\": \"The Diary of a Young Girl\", \"author\": \"Anne Frank\", \"imageUrl\": \"TheDiaryofaYoung Girl.jpg\", \"totalCopies\": 1 },\n  { \"title\": \"The Four Agreements\", \"author\": \"Don Miguel Ruiz\", \"imageUrl\": \"TheFourAgreements.jpg\", \"totalCopies\": 2 },\n  { \"title\": \"The Gulag Archipelago\", \"author\": \"Aleksandr Solzhenitsyn\", \"imageUrl\": \"TheGulagArchipelago.jpg\", \"totalCopies\": 3 },\n  { \"title\": \"The Innovators\", \"author\": \"Walter Isaacson\", \"imageUrl\": \"TheInnovators.jpg\", \"totalCopies\": 4 },\n  { \"title\": \"The Innovator’s Dilemma\", \"author\": \"Clayton Christensen\", \"imageUrl\": \"TheInnovator’sDilemma.png\", \"totalCopies\": 2 },\n  { \"title\": \"The Intelligent Investor\", \"author\": \"Benjamin Graham\", \"imageUrl\": \"TheIntelligentInvestor.jpg\", \"totalCopies\": 3 },\n  { \"title\": \"The Lean Startup\", \"author\": \"Eric Ries\", \"imageUrl\": \"TheLeanStartup.jpg\", \"totalCopies\": 1 },\n  { \"title\": \"The Lord of the Rings\", \"author\": \"J.R.R. Tolkien\", \"imageUrl\": \"TheLordoftheRings.jpg\", \"totalCopies\": 2 },\n  { \"title\": \"The Man Who Knew Infinity\", \"author\": \"Robert Kanigel\", \"imageUrl\": \"TheManWhoKnewInfinity.jpg\", \"totalCopies\": 4 },\n  { \"title\": \"The Martian\", \"author\": \"Andy Weir\", \"imageUrl\": \"TheMartian.jpg\", \"totalCopies\": 3 },\n  { \"title\": \"The Mythical Man-Month\", \"author\": \"Frederick P. Brooks Jr.\", \"imageUrl\": \"TheMythicalMan-Month.jpg\", \"totalCopies\": 2 },\n  { \"title\": \"The Origin of Species\", \"author\": \"Charles Darwin\", \"imageUrl\": \"TheOriginofSpecies.jpg\", \"totalCopies\": 1 },\n  { \"title\": \"The Power of Habit\", \"author\": \"Charles Duhigg\", \"imageUrl\": \"ThePowerofHabit.jpg\", \"totalCopies\": 4 },\n  { \"title\": \"The Power of Now\", \"author\": \"Eckhart Tolle\", \"imageUrl\": \"ThePowerofNow.jpg\", \"totalCopies\": 2 },\n  { \"title\": \"The Pragmatic Programmer\", \"author\": \"Andrew Hunt & David Thomas\", \"imageUrl\": \"ThePragmaticProgrammer.jpg\", \"totalCopies\": 3 },\n  { \"title\": \"The Richest Man in Babylon\", \"author\": \"George S. Clason\", \"imageUrl\": \"TheRichestManinBabylon.jpg\", \"totalCopies\": 1 },\n  { \"title\": \"The Selfish Gene\", \"author\": \"Richard Dawkins\", \"imageUrl\": \"TheSelfishGene.jpg\", \"totalCopies\": 2 },\n  { \"title\": \"The Subtle Art of Not Giving a F_ck\", \"author\": \"Mark Manson\", \"imageUrl\": \"TheSubtleArtofNotGivingaF_ck.jpg\", \"totalCopies\": 3 },\n  { \"title\": \"Thinking Fast Slow\", \"author\": \"Daniel Kahneman\", \"imageUrl\": \"ThinkingFastSlow.jpg\", \"totalCopies\": 1 },\n  { \"title\": \"To Kill a Mockingbird\", \"author\": \"Harper Lee\", \"imageUrl\": \"ToKillaMockingbird.jpg\", \"totalCopies\": 2 },\n  { \"title\": \"Walden\", \"author\": \"Henry David Thoreau\", \"imageUrl\": \"walden_bright.png\", \"totalCopies\": 4 },\n  { \"title\": \"Zero to One\", \"author\": \"Peter Thiel\", \"imageUrl\": \"ZerotoOne.jpg\", \"totalCopies\": 2 }\n]\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/book/batch",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"book",
+						"batch"
+					]
+				},
+				"description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+			},
+			"response": []
+		},
+		{
+			"name": "Update Book",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Successful PUT request\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "  { \"title\": \"1984\", \n  \"author\": \"George Orwell\", \n  \"imageUrl\": \"1984.jpg\", \n  \"totalCopies\": 2 \n  }\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/book/1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"book",
+						"1"
+					]
+				},
+				"description": "This is a PUT request and it is used to overwrite an existing piece of data. For instance, after you create an entity with a POST request, you may want to modify that later. You can do that using a PUT request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful PUT request typically returns a `200 OK`, `201 Created`, or `204 No Content` response code."
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Book",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Successful DELETE request\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 202, 204]);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/book/1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"book",
+						"1"
+					]
+				},
+				"description": "This is a DELETE request, and it is used to delete data that was previously created via a POST request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful DELETE request typically returns a `200 OK`, `202 Accepted`, or `204 No Content` response code."
+			},
+			"response": []
+		},
+		{
+			"name": "GetPageableMembers",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/member/pageable?name=&page=0&size=10",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"member",
+						"pageable"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": ""
+						},
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "10"
+						}
+					]
+				},
+				"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+			},
+			"response": []
+		},
+		{
+			"name": "GetMemberBorrowedBooks",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/member/borrowed/1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"member",
+						"borrowed",
+						"1"
+					]
+				},
+				"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+			},
+			"response": []
+		},
+		{
+			"name": "GetMemberAvailableBooks",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/member/available/1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"member",
+						"available",
+						"1"
+					]
+				},
+				"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+			},
+			"response": []
+		},
+		{
+			"name": "Post Member",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Successful POST request\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "  { \"title\": \"1984\", \n  \"author\": \"George Orwell\", \n  \"imageUrl\": \"1984.jpg\", \n  \"totalCopies\": 2 \n  }\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/book",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"book"
+					]
+				},
+				"description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+			},
+			"response": []
+		},
+		{
+			"name": "Batch Members",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Successful POST request\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n  { \"name\": \"Alexandra Winston\", \"imageUrl\": \"0F.jpg\" },\n  { \"name\": \"James Carter\", \"imageUrl\": \"1M.jpg\" },\n  { \"name\": \"Sophia Martinez\", \"imageUrl\": \"2F.jpg\" },\n  { \"name\": \"Michael Johnson\", \"imageUrl\": \"3M.jpg\" },\n  { \"name\": \"Emily Davis\", \"imageUrl\": \"4F.jpg\" },\n  { \"name\": \"Daniel Smith\", \"imageUrl\": \"5M.jpg\" },\n  { \"name\": \"Matthew Brown\", \"imageUrl\": \"6M.jpg\" },\n  { \"name\": \"Olivia Wilson\", \"imageUrl\": \"7F.jpg\" },\n  { \"name\": \"Christopher Lee\", \"imageUrl\": \"8M.jpg\" },\n  { \"name\": \"Isabella Moore\", \"imageUrl\": \"9F.jpg\" },\n  { \"name\": \"Samual Anderson\", \"imageUrl\": \"10M.jpg\" },\n  { \"name\": \"Ethan Thomas\", \"imageUrl\": \"11F.jpg\" },\n  { \"name\": \"Charlotte Jackson\", \"imageUrl\": \"12M.jpg\" },\n  { \"name\": \"Benjamin White\", \"imageUrl\": \"13F.jpg\" },\n  { \"name\": \"Lucas Harris\", \"imageUrl\": \"14M.jpg\" },\n  { \"name\": \"Amelia Martin\", \"imageUrl\": \"15M.jpg\" },\n  { \"name\": \"Harper Thompson\", \"imageUrl\": \"16F.jpg\" },\n  { \"name\": \"Alexander Garcia\", \"imageUrl\": \"17M.jpg\" },\n  { \"name\": \"Evelyn Clark\", \"imageUrl\": \"18F.jpg\" },\n  { \"name\": \"Oliver Lewis\", \"imageUrl\": \"19M.jpg\" },\n  { \"name\": \"Luna Robinson\", \"imageUrl\": \"20F.jpg\" }\n]\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/member/batch",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"member",
+						"batch"
+					]
+				},
+				"description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+			},
+			"response": []
+		},
+		{
+			"name": "Read Book",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Successful POST request\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "  { \"title\": \"1984\", \n  \"author\": \"George Orwell\", \n  \"imageUrl\": \"1984.jpg\", \n  \"totalCopies\": 2 \n  }\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/member/read/1/1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"member",
+						"read",
+						"1",
+						"1"
+					]
+				},
+				"description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+			},
+			"response": []
+		},
+		{
+			"name": "Borrow Book",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Successful POST request\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "  { \"title\": \"1984\", \n  \"author\": \"George Orwell\", \n  \"imageUrl\": \"1984.jpg\", \n  \"totalCopies\": 2 \n  }\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/member/borrow/1/1?duration=24",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"member",
+						"borrow",
+						"1",
+						"1"
+					],
+					"query": [
+						{
+							"key": "duration",
+							"value": "24"
+						}
+					]
+				},
+				"description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+			},
+			"response": []
+		},
+		{
+			"name": "Return Book",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Successful POST request\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "  { \"title\": \"1984\", \n  \"author\": \"George Orwell\", \n  \"imageUrl\": \"1984.jpg\", \n  \"totalCopies\": 2 \n  }\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/member/return/2",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"member",
+						"return",
+						"2"
+					]
+				},
+				"description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+			},
+			"response": []
+		},
+		{
+			"name": "Update Member",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Successful PUT request\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "  { \"id\": 1,\n    \"title\": \"1984\", \n  \"author\": \"George Orwell\", \n  \"imageUrl\": \"1984.jpg\", \n  \"totalCopies\": 2 \n  }\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/member/1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"member",
+						"1"
+					]
+				},
+				"description": "This is a PUT request and it is used to overwrite an existing piece of data. For instance, after you create an entity with a POST request, you may want to modify that later. You can do that using a PUT request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful PUT request typically returns a `200 OK`, `201 Created`, or `204 No Content` response code."
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Member",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Successful DELETE request\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 202, 204]);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/member/1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"member",
+						"1"
+					]
+				},
+				"description": "This is a DELETE request, and it is used to delete data that was previously created via a POST request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful DELETE request typically returns a `200 OK`, `202 Accepted`, or `204 No Content` response code."
+			},
+			"response": []
+		},
+		{
+			"name": "GetNotifications",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/library/notifications",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"library",
+						"notifications"
+					]
+				},
+				"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+			},
+			"response": []
+		},
+		{
+			"name": "ApproveNextReader",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/library/approve/1/1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"library",
+						"approve",
+						"1",
+						"1"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "",
+							"disabled": true
+						},
+						{
+							"key": "page",
+							"value": "0",
+							"disabled": true
+						},
+						{
+							"key": "size",
+							"value": "10",
+							"disabled": true
+						}
+					]
+				},
+				"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+			},
+			"response": []
+		},
+		{
+			"name": "NonReturnedBooks",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/library/expired",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"library",
+						"expired"
+					]
+				},
+				"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "id",
+			"value": "1"
+		},
+		{
+			"key": "base_url",
+			"value": "https://template.postman-echo.com"
+		}
+	]
+}

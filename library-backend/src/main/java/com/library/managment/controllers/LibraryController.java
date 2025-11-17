@@ -23,6 +23,15 @@ public class LibraryController {
     @Autowired
     private ReadingActivityRepository readingActivityRepository;
 
+
+    // show books not returned before deadline
+    @GetMapping()
+    public List<ReadingActivity> getActivities() {
+
+        return readingActivityRepository.findAll();
+    }
+
+
     // Admin: view notifications
     @GetMapping("/notifications")
     public List<Notification> getNotifications() {
@@ -46,6 +55,8 @@ public List<ReadingActivity> getExpiredActivities() {
     return readingActivityRepository.
             findByIsActiveTrueAndExpectedEndTimeBefore(LocalDateTime.now());
 }
+
+
 
 
 }

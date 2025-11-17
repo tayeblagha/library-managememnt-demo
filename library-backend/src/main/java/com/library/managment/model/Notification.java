@@ -5,20 +5,12 @@ import java.time.LocalDateTime;
 public class Notification {
     private Book  book;
     private Member member;
-    private LocalDateTime timestamp;
+    private int duration;
 
-    public Notification(Book book, Member member, LocalDateTime timestamp) {
+    public Notification(Book book, Member member, int duration) {
         this.book = book;
         this.member = member;
-        this.timestamp = timestamp;
-    }
-
-    public Book getBook() {
-        return book;
-    }
-
-    public void setBook(Book book) {
-        this.book = book;
+        this.duration = duration;
     }
 
     public Member getMember() {
@@ -29,11 +21,19 @@ public class Notification {
         this.member = member;
     }
 
-    public LocalDateTime getTimestamp() {
-        return timestamp;
+    public int getDuration() {
+        return duration;
     }
 
-    public void setTimestamp(LocalDateTime timestamp) {
-        this.timestamp = timestamp;
+    public void setDuration(int duration) {
+        this.duration = duration;
+    }
+
+    public Book getBook() {
+        return book;
+    }
+
+    public void setBook(Book book) {
+        this.book = book;
     }
 }

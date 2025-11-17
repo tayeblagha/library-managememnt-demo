@@ -100,21 +100,17 @@ export default function MemberBookManager({
     setSelectedOption(option ?? null);
   };
 
-  // compute number of hours between now and chosen returnDate (integer hours)
-  const computeHoursFromReturnDate = (selectedDateStr: string) => {
-    const now = new Date();
-
-    // build date with the same time of day as 'now' to avoid timezone midnight issues
+  // --- Simplified: compute number of hours (integer) between now and chosen returnDate
+  // returns a Number (int), minimum 1
+  const computeHoursFromReturnDate = (selectedDateStr: string): number => {
+    const now = Date.now();
     const [y, m, d] = selectedDateStr.split("-").map((s) => Number(s));
-    const target = new Date(y, m - 1, d, now.getHours(), now.getMinutes(), now.getSeconds());
-
-    let diffMs = target.getTime() - now.getTime();
-    if (diffMs <= 0) {
-      // if user picks today or past, enforce minimum 1 hour
-      diffMs = 60 * 60 * 1000;
-    }
+    // create a target date using current time-of-day to avoid midnight timezone surprises
+    const nowTime = new Date();
+    const target = new Date(y, m - 1, d, nowTime.getHours(), nowTime.getMinutes(), nowTime.getSeconds()).getTime();
+    const diffMs = target - now;
     const hours = Math.ceil(diffMs / (1000 * 60 * 60));
-    return hours; // <-- integer number of hours
+    return Math.max(1, hours); // always at least 1 hour
   };
 
   const handleAction = async () => {
@@ -151,6 +147,7 @@ export default function MemberBookManager({
       } else {
         // borrow -> compute hours (integer) and send to backend
         const hours = computeHoursFromReturnDate(returnDate);
+        // hours IS a number (int) now
         const res = await MemberService.borrowBook(memberId, selectedOption.value, hours);
 
         if (res.success) {
@@ -325,11 +322,7 @@ export default function MemberBookManager({
             </button>
           </div>
 
-          {!member?.active && (
-            <span className="text-sm text-yellow-500 flex items-center gap-1 mt-2">
-              only active Members can request a book <i className="fa-solid fa-exclamation"></i>
-            </span>
-          )}
+         
         </>
       )}
 
@@ -365,15 +358,22 @@ export default function MemberBookManager({
               </div>
             </div>
 
-            <button
+            <button  disabled={!member?.active }
               onClick={() => handleReturn(activity)}
-              className="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 transition-colors"
+              className="disabled:bg-gray-400 px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 transition-colors"
             >
               <i className="fa-solid fa-rotate-left"></i>
             </button>
           </div>
         ))
       )}
+
+
+       {!member?.active && (
+            <span className="text-sm text-yellow-500 flex items-center gap-1 mt-2">
+              only active Members can request or return a book <i className="fa-solid fa-exclamation"></i>
+            </span>
+          )}
     </div>
   );
 }
