@@ -6,7 +6,7 @@ import { Book } from "../../models/Book";
 import { BookService } from "../../services/BookService";
 import BookCard from "./BookCard";
 import useDelayedSpinner from "@/hooks/useDelayedSpinner";
-import Spinner from "../Spinner";
+import Spinner from "../spinner/Spinner";
 
 export default function BookList() {
   const [books, setBooks] = useState<Book[]>([]);

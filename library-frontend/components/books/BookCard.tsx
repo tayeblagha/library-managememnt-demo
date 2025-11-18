@@ -7,12 +7,10 @@ interface Props {
 
 export default function BookCard({ book }: Props) {
   return (
-    <div className=" rounded-xl  h-[1000px] flex flex-col">
+    <div className="rounded-2xl h-[1000px] flex flex-col overflow-hidden shadow-lg border border-gray-200">
       <div className="h-[900px] overflow-hidden">
         <img
-          src={
-            book.imageUrl 
-          }
+          src={book.imageUrl}
           alt={book.title}
           className="w-full h-full object-cover block"
         />

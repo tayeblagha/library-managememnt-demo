@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import Select, { SingleValue } from "react-select";
-import Swal from "sweetalert2";
 import { Book } from "@/models/Book";
 import { ReadingActivity } from "@/models/ReadingActivity";
 import { MemberService } from "@/services/MemberService";
@@ -13,6 +12,12 @@ type Option = {
   imageUrl: string;
   book: Book;
 };
+import {
+  swalSuccess,
+  swalInfo,
+  swalError,
+  swalConfirm,
+} from "@/utils/swal";
 
 export default function MemberBookManager({ memberId }: { memberId: number;}) {
   const [member, setMember] = useState<any>(null);
@@ -122,24 +127,14 @@ export default function MemberBookManager({ memberId }: { memberId: number;}) {
           setOptions((prev) =>
             prev.filter((option) => option.value !== selectedOption.value)
           );
-          Swal.fire({
-            icon: "success",
-            title: "Book Requested (Read)",
-            text: res.message,
-            timer: 5000,
-            showConfirmButton: false,
-          });
+                    swalSuccess("Book Requested (Read)", res.message);
         } else {
-          Swal.fire({
-            icon: "info",
-            title: "Book Requested (Read)",
-            html: `
-              ${res.message}<br/>
-              ${res.rank ? `<strong> Rank   : ${res.rank}</strong>` : ""}
-            `,
-            timer: 8000,
-            showConfirmButton: false,
-          });
+          swalInfo(
+            "Book Requested (Read)",
+            `${res.message}<br/>
+              ${res.rank ? `<strong> Rank: ${res.rank}</strong>` : ""}
+            `
+          );
         }
       } else {
         // borrow -> compute hours (integer) and send to backend
@@ -151,24 +146,14 @@ export default function MemberBookManager({ memberId }: { memberId: number;}) {
           setOptions((prev) =>
             prev.filter((option) => option.value !== selectedOption.value)
           );
-          Swal.fire({
-            icon: "success",
-            title: "Book Borrowed",
-            text: res.message,
-            timer: 5000,
-            showConfirmButton: false,
-          });
+                    swalSuccess("Book Borrowed", res.message);
         } else {
-          Swal.fire({
-            icon: "info",
-            title: "Book Borrowed",
-            html: `
-              ${res.message}<br/>
-              ${res.rank ? `<strong> Rank   : ${res.rank}</strong>` : ""}
-            `,
-            timer: 8000,
-            showConfirmButton: false,
-          });
+          swalInfo(
+            "Book Borrowed",
+            `${res.message}<br/>
+              ${res.rank ? `<strong> Rank: ${res.rank}</strong>` : ""}
+            `
+          );
         }
       }
 
@@ -176,45 +161,26 @@ export default function MemberBookManager({ memberId }: { memberId: number;}) {
       await loadBorrowedBooks();
     } catch (error) {
       console.error("Failed to perform action:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Failed to perform action. Please try again.",
-      });
+            swalError("Error", "Failed to perform action. Please try again.");
     }
   };
 
   const handleReturn = async (activity: ReadingActivity) => {
-    const result = await Swal.fire({
-      title: `Return Book?`,
-      text: `Are you sure member "${activity.member.name}" returned the book "${activity.book.title}"?`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, return it!",
-    });
+      const result = await swalConfirm(
+      "Return Book?",
+      `Are you sure member "${activity.member.name}" returned "${activity.book.title}"?`
+    );
 
     if (result.isConfirmed) {
       try {
         const res = await MemberService.returnBook(activity.id!);
 
-        Swal.fire({
-          icon: "success",
-          title: "Book Returned",
-          text: res.message,
-          timer: 2000,
-          showConfirmButton: false,
-        });
+               swalSuccess("Book Returned", res.message);
 
         await Promise.all([loadAvailableBooks(), loadBorrowedBooks()]);
       } catch (error) {
         console.error("Failed to return book:", error);
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: "Failed to return book. Please try again.",
-        });
+                swalError("Error", "Failed to return book. Please try again.");
       }
     }
   };

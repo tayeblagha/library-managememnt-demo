@@ -4,7 +4,11 @@ import { useState, useEffect, useCallback } from "react";
 import LibraryService from "@/services/LibraryService";
 import { NotificationDTO } from "@/models/NotificationDTO";
 import { ReadingActivity } from "@/models/ReadingActivity";
-import Swal from "sweetalert2";
+import {
+  swalSuccess,
+  swalError,
+  swalConfirm,
+} from "@/utils/swal";
 
 const Library = () => {
   const [notifications, setNotifications] = useState<NotificationDTO[]>([]);
@@ -45,17 +49,10 @@ const Library = () => {
     memberName: string,
     bookTitle: string
   ) => {
-    const result = await Swal.fire({
-      title: "Are you sure?",
-      text: `Are you sure member "${memberName}" returned the book "${bookTitle}"?`,
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonColor: "#10B981",
-      cancelButtonColor: "#6B7280",
-      confirmButtonText: "Yes, approve!",
-      cancelButtonText: "Cancel",
-      reverseButtons: true,
-    });
+     const result = await swalConfirm(
+      "Are you sure?",
+      `Are you sure member "${memberName}" returned the book "${bookTitle}"?`
+    );
 
     if (!result.isConfirmed) {
       return;
@@ -76,32 +73,20 @@ const Library = () => {
           prev.filter((a) => !(a.book.id === bookId && a.member.id === memberId))
         );
 
-        await Swal.fire({
-          title: "Approved!",
-          text: `Book "${bookTitle}" has been approved for the next reader.`,
-          icon: "success",
-          confirmButtonColor: "#10B981",
-        });
+        await swalSuccess(
+          "Approved!",
+          `Book "${bookTitle}" has been approved for the next reader.`
+        );
 
         // refresh to get updated expiredBooks or other server state
         fetchData();
       } else {
         setError(res.message);
-        await Swal.fire({
-          title: "Error!",
-          text: res.message,
-          icon: "error",
-          confirmButtonColor: "#EF4444",
-        });
+                await swalError("Error!", res.message);
       }
     } catch {
       setError("Failed to approve reader");
-      await Swal.fire({
-        title: "Error!",
-        text: "Failed to approve reader",
-        icon: "error",
-        confirmButtonColor: "#EF4444",
-      });
+            await swalError("Error!", "Failed to approve reader");
     } finally {
       setApproving(null);
     }
@@ -221,64 +206,53 @@ const Library = () => {
         )}
       </div>
 
-      {/* Expired Books */}
-      <div className="bg-white shadow rounded border">
-        <div className="p-4 border-b flex items-center gap-2">
-          <i className="fa-solid fa-hourglass-end text-red-600"></i>
-          <h2 className="font-semibold text-lg">Expired Books</h2>
-          <span className="ml-auto bg-red-500 text-white px-2 py-1 rounded text-sm">
-            {expiredBooks.length}
-          </span>
-        </div>
+    {/* Expired Books */}
+<div className="bg-white shadow rounded border overflow-hidden">
+  <div className="flex items-center gap-2 p-4 border-b">
+    <i className="fa-solid fa-hourglass-end text-red-600" />
+    <h2 className="font-semibold">Expired Books</h2>
+    <span className="ml-auto px-2 py-1 rounded text-sm bg-red-500 text-white">
+      {expiredBooks.length}
+    </span>
+  </div>
 
-        {expiredBooks.length === 0 ? (
-          <div className="p-6 text-center text-gray-500">
-            <i className="fa-solid fa-circle-check text-3xl mb-2"></i>
-            <p>No expired books</p>
-          </div>
-        ) : (
-          expiredBooks.map((a) => (
-            <div
-              key={a.id}
-              className="p-4 border-b last:border-0 hover:bg-gray-50"
-            >
-              <div className="flex gap-3">
-                {a.book.imageUrl && (
-                  <img
-                    src={a.book.imageUrl}
-                    className="w-12 h-16 object-cover rounded"
-                  />
+  {expiredBooks.length === 0 ? (
+    <div className="p-6 text-center text-gray-500">
+      <i className="fa-solid fa-circle-check text-3xl mb-2" />
+      <p>No expired books</p>
+    </div>
+  ) : (
+    expiredBooks.map((a) => (
+      <div key={a.id} className="p-4 border-b hover:bg-gray-50">
+        <div className="flex gap-3">
+          {a.book.imageUrl && (
+            <img src={a.book.imageUrl} className="w-12 h-16 rounded object-cover" />
+          )}
+
+          <div className="flex-1">
+            <p className="font-medium">{a.book.title}</p>
+
+            <div className="text-sm text-gray-500 mt-1 flex gap-4 items-center">
+              <span className="flex items-center gap-2">
+                {a.member.imageUrl && (
+                  <img src={a.member.imageUrl} className="w-5 h-7 rounded" />
                 )}
+                {a.member.name}
+              </span>
 
-                <div className="flex-1">
-                  <p className="font-medium">{a.book.title}</p>
+              <span>Start: {new Date(a.startTime).toLocaleDateString()}</span>
 
-                  <div className="text-sm text-gray-500 mt-1 flex gap-4">
-                    <span className="flex">
-                      
-                      {a.member.imageUrl && (
-                  <img
-                    src={a.member.imageUrl}
-                    className=" -mt-1 w-5 h-7 object-cover rounded"
-                  />
-                )}
-                       {a.member.name}
-                    </span>
-                    <span>
-                      Start: {new Date(a.startTime).toLocaleDateString()}
-                    </span>
-                    <span className="text-red-500 font-semibold">
-                      Exp: {new Date(a.expectedEndTime).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-
-             
-              </div>
+              <span className="text-red-500 font-semibold">
+                Exp: {new Date(a.expectedEndTime).toLocaleDateString()}
+              </span>
             </div>
-          ))
-        )}
+          </div>
+        </div>
       </div>
+    ))
+  )}
+</div>
+
 
       <div className="text-center text-gray-500 text-sm">
         <i className="fa-solid fa-circle-dot text-green-500 animate-pulse"></i>{" "}
