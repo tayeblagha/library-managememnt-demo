@@ -22,16 +22,15 @@ export default function MemberCard({ member, onToggle }: Props) {
     <>
       {/* Card */}
       <div
-        className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg 
-                   transition-shadow duration-300 h-[750px] flex flex-col
+        className="bg-white rounded-xl  h-[750px] flex flex-col
                    cursor-pointer" // 👈 SHOW HAND ON HOVER
         onClick={() => setOpenPopup(true)} // 👈 OPEN POPUP WHEN CLICKED
       >
         <div className="h-[650px] overflow-hidden">
           <img
             src={
-              member.imageUrl ||
-              "https://via.placeholder.com/750x1000?text=No+Image"
+              member.imageUrl 
+             
             }
             alt={member.name}
             className="w-full h-full object-cover block"

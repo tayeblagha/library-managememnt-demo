@@ -11,7 +11,7 @@ export default function Header() {
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         {/* Logo Section */}
         <div className="flex items-center gap-3">
-          <div className="h-12 w-12 rounded-full bg-gradient-to-tr from-indigo-500 to-pink-500 text-white flex items-center justify-center shadow-md">
+          <div className="h-12 w-12 rounded-full bg-linear-to-tr from-indigo-500 to-pink-500 text-white flex items-center justify-center shadow-md">
             <i className="fa-solid fa-book-open text-xl"></i>
           </div>
           <div>

@@ -6,15 +6,10 @@ type Options = {
   minVisibleMs?: number; // once shown, keep spinner visible at least this long
 };
 
-/**
- * useDelayedSpinner
- * - isActive: whether a load operation is in progress (true while fetching)
- * - isAppend: whether this load is an "append / load-more" (spinner should only appear for append loads)
- *
- * returns: showSpinner boolean (true when spinner should be rendered)
- */
-export default function useDelayedSpinner(isActive: boolean, isAppend: boolean, options?: Options) {
-  const { delayBeforeShowMs = 300, minVisibleMs = 1500 } = options ?? {};
+
+export default function useDelayedSpinner(isActive: boolean, isAppend: boolean) {
+const delayBeforeShowMs = 300;
+const minVisibleMs = 1500;
 
   const [showSpinner, setShowSpinner] = useState(false);
   const showTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);

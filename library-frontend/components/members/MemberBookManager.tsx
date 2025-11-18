@@ -14,11 +14,7 @@ type Option = {
   book: Book;
 };
 
-export default function MemberBookManager({
-  memberId = 1,
-}: {
-  memberId: number;
-}) {
+export default function MemberBookManager({ memberId }: { memberId: number;}) {
   const [member, setMember] = useState<any>(null);
 
   const [options, setOptions] = useState<Option[]>([]);
@@ -71,6 +67,12 @@ export default function MemberBookManager({
       console.error("Failed to load borrowed books:", error);
     }
   };
+  const formatDateYYYYMMDD = (d: Date) => {
+    const yyyy = d.getFullYear();
+    const mm = `${d.getMonth() + 1}`.padStart(2, "0");
+    const dd = `${d.getDate()}`.padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  };
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -89,12 +91,7 @@ export default function MemberBookManager({
     setReturnDate(formatDateYYYYMMDD(defaultReturn));
   }, [memberId]);
 
-  const formatDateYYYYMMDD = (d: Date) => {
-    const yyyy = d.getFullYear();
-    const mm = `${d.getMonth() + 1}`.padStart(2, "0");
-    const dd = `${d.getDate()}`.padStart(2, "0");
-    return `${yyyy}-${mm}-${dd}`;
-  };
+  
 
   const handleChange = (option: SingleValue<Option>) => {
     setSelectedOption(option ?? null);
