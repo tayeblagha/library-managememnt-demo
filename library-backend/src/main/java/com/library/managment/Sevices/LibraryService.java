@@ -44,7 +44,7 @@ public class LibraryService {
     private final Map<Long, LinkedHashSet<Long>> bookWaitingQueues = new ConcurrentHashMap<>();
 
     // Track durations for waiting members
-    private final Map<BookMemberDTO, Integer> durationTracker = new HashMap<>();
+    private final Map<BookMemberDTO, Integer> durationTracker = new ConcurrentHashMap<>();
 
     // Efficient notification tracking - BookId -> Ordered Set (LinkedHashSet) of notified member IDs
     private final Map<Long, LinkedHashSet<Long>> bookNotificationMembers = new ConcurrentHashMap<>();
