@@ -48,10 +48,8 @@ public class BookController {
 
     // Get book by id
     @GetMapping("/{id}")
-    public ResponseEntity<Book> getBookById(@PathVariable Long id) {
-        Optional<Book> book = bookRepository.findById(id);
-        return book.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public Book getBookById(@PathVariable Long id) {
+        return bookRepository.findById(id).orElseThrow();
     }
 
     // Add new book
@@ -85,13 +83,8 @@ public class BookController {
     // Update existing book
     @PutMapping("/{id}")
     public ResponseEntity<Book> updateBook(@PathVariable Long id, @RequestBody Book bookDetails) {
-        Optional<Book> optionalBook = bookRepository.findById(id);
+        Book book = bookRepository.findById(id).orElseThrow();
 
-        if (optionalBook.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        Book book = optionalBook.get();
         book.setTitle(bookDetails.getTitle());
         book.setAuthor(bookDetails.getAuthor());
         book.setTotalCopies(bookDetails.getTotalCopies());

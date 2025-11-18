@@ -61,12 +61,9 @@ public class MemberController {
         }
     }
 
-    // Get member by id
     @GetMapping("/{id}")
-    public ResponseEntity<Member> getMemberById(@PathVariable Long id) {
-        Optional<Member> member = memberRepository.findById(id);
-        return member.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public Member getMemberById(@PathVariable Long id) {
+        return memberRepository.findById(id).orElseThrow();
     }
 
     // Initialize member
@@ -98,13 +95,8 @@ public class MemberController {
     // Update existing member
     @PutMapping("/{id}")
     public ResponseEntity<Member> updateMember(@PathVariable Long id, @RequestBody Member memberDetails) {
-        Optional<Member> optionalMember = memberRepository.findById(id);
+        Member member = memberRepository.findById(id).orElseThrow();
 
-        if (optionalMember.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        Member member = optionalMember.get();
         member.setName(memberDetails.getName());
 
         Member updatedMember = memberRepository.save(member);
