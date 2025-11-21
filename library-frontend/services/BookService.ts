@@ -2,7 +2,7 @@
 import axios from "axios";
 import { BookResponse } from "@/models/Book";
 
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_HOST || "http://localhost:9090";
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_HOST ;
 
 export const BookService = {
   

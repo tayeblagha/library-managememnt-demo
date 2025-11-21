@@ -1,7 +1,4 @@
 spring:
-  application:
-    name: library
-
   datasource:
     url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/library?allowPublicKeyRetrieval=true&useSSL=false
     username: ${MYSQL_USERNAME:root}
@@ -11,5 +8,3 @@ spring:
     hibernate:
       ddl-auto: ${MYSQL_STRATEGY:create} #Change this to create when you run application first time to automatically create tables
 
-server:
-  port: ${SERVER_PORT:9090}
