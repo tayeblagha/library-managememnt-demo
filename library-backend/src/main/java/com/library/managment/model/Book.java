@@ -17,16 +17,7 @@ public class Book {
     private Integer totalCopies;
     private Integer availableCopies;
 
-    public Book(String title, String author, String imageUrl, Integer totalCopies, Integer availableCopies) {
-        this.title = title;
-        this.author = author;
-        this.imageUrl = imageUrl;
-        this.totalCopies = totalCopies;
-        this.availableCopies = availableCopies;
-    }
 
-    public Book() {
-    }
 
     public Long getId() {
         return id;

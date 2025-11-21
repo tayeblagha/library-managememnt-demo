@@ -5,35 +5,39 @@ import Select, { SingleValue } from "react-select";
 import { Book } from "@/models/Book";
 import { ReadingActivity } from "@/models/ReadingActivity";
 import { MemberService } from "@/services/MemberService";
+import { swalSuccess, swalInfo, swalError, swalConfirm } from "@/utils/swal";
 
+// The type used for react-select options
 type Option = {
   value: number;
   label: string;
   imageUrl: string;
   book: Book;
 };
-import {
-  swalSuccess,
-  swalInfo,
-  swalError,
-  swalConfirm,
-} from "@/utils/swal";
 
-export default function MemberBookManager({ memberId }: { memberId: number;}) {
+export default function MemberBookManager({ memberId }: { memberId: number }) {
+  // Current member info
   const [member, setMember] = useState<any>(null);
 
+  // Dropdown book options (only available books)
   const [options, setOptions] = useState<Option[]>([]);
+
+  // Selected book from dropdown
   const [selectedOption, setSelectedOption] = useState<Option | null>(null);
+
+  // Books the member already borrowed
   const [borrowedBooks, setBorrowedBooks] = useState<ReadingActivity[]>([]);
+
+  // Loading state while fetching books
   const [loadingBooks, setLoadingBooks] = useState(true);
 
-  // Mode: "read" (default) or "borrow"
+  // Mode toggle: read (default) or borrow
   const [mode, setMode] = useState<"read" | "borrow">("read");
 
-  // For borrow: selected return date (yyyy-MM-dd)
+  // Selected return date for borrow mode
   const [returnDate, setReturnDate] = useState<string>("");
 
-  // Load member
+  // Load member information once
   const loadMember = async () => {
     try {
       const m = await MemberService.getMemberById(memberId);
@@ -47,23 +51,24 @@ export default function MemberBookManager({ memberId }: { memberId: number;}) {
     loadMember();
   }, [memberId]);
 
-  // Load available books
+  // Fetch all available books
   const loadAvailableBooks = async () => {
     try {
       const books = await MemberService.getAvailableBooks(memberId);
-      const mapped: Option[] = books.map((b) => ({
-        value: b.id!,
-        label: b.title,
-        imageUrl: b.imageUrl,
-        book: b,
-      }));
-      setOptions(mapped);
+      setOptions(
+        books.map((b) => ({
+          value: b.id!,
+          label: b.title,
+          imageUrl: b.imageUrl,
+          book: b,
+        }))
+      );
     } catch (error) {
       console.error("Failed to load available books:", error);
     }
   };
 
-  // Load borrowed books
+  // Fetch books that the member already borrowed
   const loadBorrowedBooks = async () => {
     try {
       const list = await MemberService.getBorrowedBooks(memberId);
@@ -72,6 +77,8 @@ export default function MemberBookManager({ memberId }: { memberId: number;}) {
       console.error("Failed to load borrowed books:", error);
     }
   };
+
+  // Format date as YYYY-MM-DD for <input type="date" />
   const formatDateYYYYMMDD = (d: Date) => {
     const yyyy = d.getFullYear();
     const mm = `${d.getMonth() + 1}`.padStart(2, "0");
@@ -79,6 +86,7 @@ export default function MemberBookManager({ memberId }: { memberId: number;}) {
     return `${yyyy}-${mm}-${dd}`;
   };
 
+  // Load all books when memberId changes
   useEffect(() => {
     const loadInitialData = async () => {
       setLoadingBooks(true);
@@ -88,71 +96,71 @@ export default function MemberBookManager({ memberId }: { memberId: number;}) {
         setLoadingBooks(false);
       }
     };
+
     loadInitialData();
-    // set default return date to today + 7 days
+
+    // Default return date = today + 7 days
     const today = new Date();
     const defaultReturn = new Date(today);
     defaultReturn.setDate(defaultReturn.getDate() + 7);
     setReturnDate(formatDateYYYYMMDD(defaultReturn));
   }, [memberId]);
 
-  
-
+  // Handle book selection
   const handleChange = (option: SingleValue<Option>) => {
     setSelectedOption(option ?? null);
   };
 
-  // --- Simplified: compute number of hours (integer) between now and chosen returnDate
-  // returns a Number (int), minimum 1
+  /**
+   * Calculates how many hours remain until the chosen return date.
+   * We send this number to the backend.
+   */
   const computeHoursFromReturnDate = (selectedDateStr: string): number => {
     const now = Date.now();
-    const [y, m, d] = selectedDateStr.split("-").map((s) => Number(s));
-    // create a target date using current time-of-day to avoid midnight timezone surprises
+    const [y, m, d] = selectedDateStr.split("-").map(Number);
+
     const nowTime = new Date();
-    const target = new Date(y, m - 1, d, nowTime.getHours(), nowTime.getMinutes(), nowTime.getSeconds()).getTime();
+    const target = new Date(
+      y,
+      m - 1,
+      d,
+      nowTime.getHours(),
+      nowTime.getMinutes(),
+      nowTime.getSeconds()
+    ).getTime();
+
     const diffMs = target - now;
     const hours = Math.ceil(diffMs / (1000 * 60 * 60));
-    return Math.max(1, hours); // always at least 1 hour
+    return Math.max(1, hours); // At least 1 hour
   };
 
+  // Perform read or borrow action
   const handleAction = async () => {
     if (!selectedOption) return;
 
     try {
       if (mode === "read") {
-        // readBook uses fixed 6 hours in backend
+        // Backend gives fixed 6 hours reading time
         const res = await MemberService.readBook(memberId, selectedOption.value);
 
         if (res.success) {
-          setOptions((prev) =>
-            prev.filter((option) => option.value !== selectedOption.value)
-          );
-                    swalSuccess("Book Requested (Read)", res.message);
+          setOptions((prev) => prev.filter((o) => o.value !== selectedOption.value));
+          swalSuccess("Book Requested (Read)", res.message);
         } else {
-          swalInfo(
-            "Book Requested (Read)",
-            `${res.message}<br/>
-              ${res.rank ? `<strong> Rank: ${res.rank}</strong>` : ""}
-            `
-          );
+          swalInfo("Book Requested (Read)", `${res.message}<br/>${res.rank ? `<strong>Rank: ${res.rank}</strong>` : ""}`);
         }
       } else {
-        // borrow -> compute hours (integer) and send to backend
+        // Borrow mode → calculate hours, then send to backend
         const hours = computeHoursFromReturnDate(returnDate);
-        // hours IS a number (int) now
         const res = await MemberService.borrowBook(memberId, selectedOption.value, hours);
 
         if (res.success) {
-          setOptions((prev) =>
-            prev.filter((option) => option.value !== selectedOption.value)
-          );
-                    swalSuccess("Book Borrowed", res.message);
+          setOptions((prev) => prev.filter((o) => o.value !== selectedOption.value));
+          swalSuccess("Book Borrowed", res.message);
         } else {
           swalInfo(
             "Book Borrowed",
-            `${res.message}<br/>
-              ${res.rank ? `<strong> Rank: ${res.rank}</strong>` : ""}
-            `
+            `${res.message}<br/>${res.rank ? `<strong> Rank: ${res.rank}</strong>` : ""}`
           );
         }
       }
@@ -161,12 +169,13 @@ export default function MemberBookManager({ memberId }: { memberId: number;}) {
       await loadBorrowedBooks();
     } catch (error) {
       console.error("Failed to perform action:", error);
-            swalError("Error", "Failed to perform action. Please try again.");
+      swalError("Error", "Failed to perform action. Please try again.");
     }
   };
 
+  // Return a borrowed book
   const handleReturn = async (activity: ReadingActivity) => {
-      const result = await swalConfirm(
+    const result = await swalConfirm(
       "Return Book?",
       `Are you sure member "${activity.member.name}" returned "${activity.book.title}"?`
     );
@@ -174,19 +183,18 @@ export default function MemberBookManager({ memberId }: { memberId: number;}) {
     if (result.isConfirmed) {
       try {
         const res = await MemberService.returnBook(activity.id!);
-
-               swalSuccess("Book Returned", res.message);
-
+        swalSuccess("Book Returned", res.message);
         await Promise.all([loadAvailableBooks(), loadBorrowedBooks()]);
       } catch (error) {
         console.error("Failed to return book:", error);
-                swalError("Error", "Failed to return book. Please try again.");
+        swalError("Error", "Failed to return book. Please try again.");
       }
     }
   };
 
   return (
     <div className="w-[360px] mx-auto mt-6">
+      {/* Member header */}
       <div className="flex flex-col items-center gap-2 mb-4">
         <img
           src={member?.imageUrl}
@@ -198,13 +206,15 @@ export default function MemberBookManager({ memberId }: { memberId: number;}) {
 
       <h3 className="text-lg font-semibold mb-3">Read / Borrow a Book</h3>
 
+      {/* While loading */}
       {loadingBooks ? (
         <p className="text-gray-500">Loading books...</p>
       ) : (
         <>
+          {/* Mode toggle */}
           <div className="mb-3 flex items-center gap-4">
-            {/* Mode toggle */}
             <div className="flex items-center gap-3">
+              {/* Read radio */}
               <label className="inline-flex items-center cursor-pointer">
                 <input
                   type="radio"
@@ -213,9 +223,10 @@ export default function MemberBookManager({ memberId }: { memberId: number;}) {
                   onChange={() => setMode("read")}
                   className="form-radio h-4 w-4 text-blue-600"
                 />
-                <span className="ml-2 text-sm">Read </span>
+                <span className="ml-2 text-sm">Read</span>
               </label>
 
+              {/* Borrow radio */}
               <label className="inline-flex items-center cursor-pointer ml-4">
                 <input
                   type="radio"
@@ -228,10 +239,9 @@ export default function MemberBookManager({ memberId }: { memberId: number;}) {
               </label>
             </div>
 
-            {/* If borrow, show date picker */}
+            {/* Show return date only in borrow mode */}
             {mode === "borrow" && (
-              <div >
-                  
+              <div>
                 <input
                   type="date"
                   value={returnDate}
@@ -243,9 +253,10 @@ export default function MemberBookManager({ memberId }: { memberId: number;}) {
             )}
           </div>
 
+          {/* Book dropdown + Action button */}
           <div className="flex items-center gap-3">
             <div className="flex-1">
-              <Select<Option, false>
+              <Select
                 options={options}
                 value={selectedOption}
                 onChange={handleChange}
@@ -278,17 +289,20 @@ export default function MemberBookManager({ memberId }: { memberId: number;}) {
               className="px-4 py-2 bg-blue-600 text-white rounded disabled:bg-gray-400 hover:bg-blue-700 transition-colors"
             >
               {mode === "read" ? (
-                <><i className="fa-solid fa-book-medical mr-2"></i>Read</>
+                <>
+                  <i className="fa-solid fa-book-medical mr-2"></i>Read
+                </>
               ) : (
-                <><i className="fa-solid fa-book-medical mr-2"></i>Borrow</>
+                <>
+                  <i className="fa-solid fa-book-medical mr-2"></i>Borrow
+                </>
               )}
             </button>
           </div>
-
-         
         </>
       )}
 
+      {/* Borrowed books section */}
       <h3 className="text-lg font-semibold mt-8 mb-3">Borrowed Books</h3>
 
       {borrowedBooks.length === 0 ? (
@@ -306,7 +320,9 @@ export default function MemberBookManager({ memberId }: { memberId: number;}) {
             />
 
             <div className="flex-1">
-              <strong className="block">{activity.book.title}</strong>
+              <strong>{activity.book.title}</strong>
+
+              {/* Book times */}
               <div className="text-[11px] mt-1 opacity-70 font-bold">
                 <div className="text-[10px] mt-1 font-bold">
                   <div>
@@ -321,7 +337,9 @@ export default function MemberBookManager({ memberId }: { memberId: number;}) {
               </div>
             </div>
 
-            <button  disabled={!member?.active }
+            {/* Return button */}
+            <button
+              disabled={!member?.active}
               onClick={() => handleReturn(activity)}
               className="disabled:bg-gray-400 px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 transition-colors"
             >
@@ -331,12 +349,13 @@ export default function MemberBookManager({ memberId }: { memberId: number;}) {
         ))
       )}
 
-
-       {!member?.active && (
-            <span className="text-sm text-yellow-500 flex items-center gap-1 mt-2">
-              only active Members can request or return a book <i className="fa-solid fa-exclamation"></i>
-            </span>
-          )}
+      {/* Warning for inactive members */}
+      {!member?.active && (
+        <span className="text-sm text-yellow-500 flex items-center gap-1 mt-2">
+          Only active members can request or return a book{" "}
+          <i className="fa-solid fa-exclamation"></i>
+        </span>
+      )}
     </div>
   );
 }

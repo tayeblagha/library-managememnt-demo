@@ -1,0 +1,3 @@
+Library Queue Management Algorithm:
+
+This system manages book borrowing by focusing on active members. When a popular book has no available copies, members who request it are placed into a Waiting Queue in the order they asked. If a copy becomes available, the system immediately checks the queue and notifies the first few members in line (up to three). If a notified member is active and requests the book, they are approved and the book is assigned. If a member leaves the library or the day ends, they are automatically removed from all queues to ensure fairness and promote the next waiting member.

@@ -8,3 +8,5 @@ spring:
     hibernate:
       ddl-auto: ${MYSQL_STRATEGY:create} #Change this to create when you run application first time to automatically create tables
 
+server:
+  port: ${SPRING_PORT:9090}
