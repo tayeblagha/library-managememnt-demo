@@ -1,0 +1,3 @@
+The library management system algorithm assigns books to members only if available copies are greater than zero. When no copies are available, new candidates are placed in a waiting list implemented as a linked set, maintaining their order of arrival. 
+
+When a borrowed book is returned, increasing the available copy count above zero, the system notifies the library administrator of the top three candidates in the waiting list. The administrator can then approve one candidate for borrowing, based on their status and presence. Once approved and a book is allocated, and the available book count returns to zero, all pending notifications are cleared until additional books become available again.
