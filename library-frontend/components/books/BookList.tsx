@@ -86,12 +86,36 @@ export default function BookList() {
       loadBooks(true);
     }
   }, [currentPage, loadBooks]);
-
-  return (
+return (
+  <>
+    {/* Main container
+        container → responsive max-width wrapper
+        mx-auto → center horizontally
+        px-4 → horizontal padding inside container
+        py-8 → large vertical padding */}
     <div className="container mx-auto px-4 py-8">
-      {/* Search Bar */}
+
+      {/* Search Bar section
+          mb-8 → space below search bar */}
       <div className="mb-8">
+
+        {/* Inner search bar wrapper
+            max-w-md → limit width to medium size
+            mx-auto → horizontally center
+            relative → needed for absolutely positioned icon */}
         <div className="max-w-md mx-auto relative">
+
+          {/* Search input
+              w-full → take full width
+              px-4 → left/right padding
+              py-3 → top/bottom padding
+              pl-12 → extra left padding to make space for icon
+              pr-4 → right padding
+              border border-gray-300 → light border
+              rounded-lg → rounded corners
+              focus:outline-none → remove default browser outline
+              focus:ring-2 → show ring when focused
+              focus:ring-blue-500 → blue focus highlight */}
           <input
             type="text"
             value={searchTerm}
@@ -103,39 +127,62 @@ export default function BookList() {
             placeholder="Search books by title..."
             className="w-full px-4 py-3 pl-12 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+
+          {/* Search icon wrapper
+              absolute 
+              inset-y-0 → stretch vertically from top to bottom    makes the icon vertically centered automatically
+              left-0 → stick to left side
+              flex items-center → vertically center icon
+              pl-4 → spacing from left border */}
           <div className="absolute inset-y-0 left-0 flex items-center pl-4">
             <i className="fas fa-search text-gray-400"></i>
           </div>
         </div>
       </div>
 
-      {/* Books Grid */}
+      {/* Books Grid
+          grid → enable grid layout
+          grid-cols-1 → 1 column on mobile
+          sm:grid-cols-2 → 2 columns on small screens
+          md:grid-cols-3 → 3 columns on medium screens
+          gap-6 → spacing between book cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {(books ?? []).map((book) => (
           <BookCard key={book.id} book={book} />
         ))}
       </div>
 
-      {/* Loading Spinner (only when showSpinner is true) */}
+      {/* Loading spinner wrapper
+          text-center → center horizontally
+          py-8 → spacing above/below spinner */}
       {showSpinner && (
         <div className="text-center py-8">
           <Spinner size={32} message="Loading more books..." />
         </div>
       )}
 
-      {/* No More Books */}
+      {/* "No more books" message
+          text-center → center text
+          py-8 → spacing
+          text-gray-500 → muted text color */}
       {!hasMore && books.length > 0 && (
         <div className="text-center py-8 text-gray-500">
           No more books to load
         </div>
       )}
 
-      {/* Empty State */}
+      {/* Empty state message
+          text-center → center text
+          py-12 → large vertical padding
+          text-gray-500 → muted color
+          text-lg → larger font */}
       {!isLoading && books.length === 0 && (
         <div className="text-center py-12 text-gray-500 text-lg">
           No books found
         </div>
       )}
     </div>
-  );
+  </>
+);
+
 }

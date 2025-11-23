@@ -191,171 +191,243 @@ export default function MemberBookManager({ memberId }: { memberId: number }) {
       }
     }
   };
+return (
+  
+  <div className="w-[360px] mx-auto mt-6">
+    
+          
+    {/* Member header */}
+     {/* flex flex-col → vertical layout
+            items-center → center horizontally
+            gap-2 → spacing between children
+            mb-4 → bottom margin */}
+    <div className="flex flex-col items-center gap-2 mb-4">
+     {/* w-12 h-12 → width/height
+            rounded-full → circular image
+            object-cover → crop/cover image to fit */}
+      <img
+        src={member?.imageUrl}
+        className="w-12 h-12 rounded-full object-cover"
+        alt={member?.name}
+      />
+      {/* font-semibold → semi-bold text
+            text-center → center text */}
+      <span className="font-semibold text-center">{member?.name}</span>
+      
+    </div>
+{/* text-lg → large text
+          font-semibold → semi-bold
+          mb-3 → bottom margin */}
+    <h3 className="text-lg font-semibold mb-3">Read / Borrow a Book</h3>
+    
 
-  return (
-    <div className="w-[360px] mx-auto mt-6">
-      {/* Member header */}
-      <div className="flex flex-col items-center gap-2 mb-4">
-        <img
-          src={member?.imageUrl}
-          className="w-12 h-12 rounded-full object-cover"
-          alt={member?.name}
-        />
-        <span className="font-semibold text-center">{member?.name}</span>
-      </div>
-
-      <h3 className="text-lg font-semibold mb-3">Read / Borrow a Book</h3>
-
-      {/* While loading */}
-      {loadingBooks ? (
-        <p className="text-gray-500">Loading books...</p>
-      ) : (
-        <>
-          {/* Mode toggle */}
-          <div className="mb-3 flex items-center gap-4">
-            <div className="flex items-center gap-3">
-              {/* Read radio */}
-              <label className="inline-flex items-center cursor-pointer">
-                <input
-                  type="radio"
-                  name="mode"
-                  checked={mode === "read"}
-                  onChange={() => setMode("read")}
-                  className="form-radio h-4 w-4 text-blue-600"
-                />
-                <span className="ml-2 text-sm">Read</span>
-              </label>
-
-              {/* Borrow radio */}
-              <label className="inline-flex items-center cursor-pointer ml-4">
-                <input
-                  type="radio"
-                  name="mode"
-                  checked={mode === "borrow"}
-                  onChange={() => setMode("borrow")}
-                  className="form-radio h-4 w-4 text-blue-600"
-                />
-                <span className="ml-2 text-sm">Borrow</span>
-              </label>
-            </div>
-
-            {/* Show return date only in borrow mode */}
-            {mode === "borrow" && (
-              <div>
-                <input
-                  type="date"
-                  value={returnDate}
-                  onChange={(e) => setReturnDate(e.target.value)}
-                  min={formatDateYYYYMMDD(new Date())}
-                  className="px-2 py-1 border rounded text-sm"
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Book dropdown + Action button */}
+    {/* While loading */}
+    {loadingBooks ? (
+      <p className="text-gray-500">Loading books...</p>
+     
+    ) : (
+      <div>
+        {/* Mode toggle */}
+         {/* flex → horizontal layout
+                items-center → vertical align center
+                gap-4 → spacing between toggle + extra elements
+                mb-3 → bottom margin */}
+        <div className="flex items-center gap-4 mb-3">
+         
           <div className="flex items-center gap-3">
-            <div className="flex-1">
-              <Select
-                options={options}
-                value={selectedOption}
-                onChange={handleChange}
-                isClearable
-                placeholder="Select a book..."
-                className="text-black"
-                formatOptionLabel={(opt) => (
-                  <div className="flex items-center gap-2">
-                    <img
-                      src={opt.imageUrl}
-                      className="w-9 h-12 object-cover rounded"
-                      alt={opt.label}
-                    />
-                    <div>
-                      <div>{opt.label}</div>
-                      <div className="text-xs opacity-60">{opt.book.author}</div>
-                    </div>
-                  </div>
-                )}
+            {/* Read radio */}
+             {/* inline-flex → inline horizontal layout
+                    items-center → vertical align center
+                    cursor-pointer → hand cursor */}
+            <label className="inline-flex items-center cursor-pointer">
+              {/* h-4 w-4 → size
+                    form-radio → Tailwind styling for radio
+                    text-blue-600 → active radio color */}
+              <input
+                type="radio"
+                name="mode"
+                checked={mode === "read"}
+                onChange={() => setMode("read")}
+                className="h-4 w-4 form-radio text-blue-600"
               />
-            </div>
+              {/* ml-2 → margin-left
+                    text-sm → small text */}
+              <span className="ml-2 text-sm">Read</span>
+             
+            </label>
 
-            <button
-              onClick={handleAction}
-              disabled={
-                !selectedOption ||
-                !member?.active ||
-                (mode === "borrow" && !returnDate)
-              }
-              className="px-4 py-2 bg-blue-600 text-white rounded disabled:bg-gray-400 hover:bg-blue-700 transition-colors"
-            >
-              {mode === "read" ? (
-                <>
-                  <i className="fa-solid fa-book-medical mr-2"></i>Read
-                </>
-              ) : (
-                <>
-                  <i className="fa-solid fa-book-medical mr-2"></i>Borrow
-                </>
-              )}
-            </button>
+            {/* Borrow radio */}
+            {/* ml-4 → left margin between radio buttons */}
+            <label className="inline-flex items-center cursor-pointer ml-4">
+              
+              <input
+                type="radio"
+                name="mode"
+                checked={mode === "borrow"}
+                onChange={() => setMode("borrow")}
+                className="h-4 w-4 form-radio text-blue-600"
+              />
+              <span className="ml-2 text-sm">Borrow</span>
+            </label>
           </div>
-        </>
-      )}
 
-      {/* Borrowed books section */}
-      <h3 className="text-lg font-semibold mt-8 mb-3">Borrowed Books</h3>
+          {/* Show return date only in borrow mode */}
+          {mode === "borrow" && (
+            <div>
+              <input
+                type="date"
+                value={returnDate}
+                onChange={(e) => setReturnDate(e.target.value)}
+                min={formatDateYYYYMMDD(new Date())}
+                className="px-2 py-1 border rounded text-sm"
+              />
+              {/* px-2 py-1 → padding inside input
+                    border → border around input
+                    rounded → slightly rounded corners
+                    text-sm → smaller text */}
+            </div>
+          )}
+        </div>
 
-      {borrowedBooks.length === 0 ? (
-        <p className="text-gray-500">No borrowed books.</p>
-      ) : (
-        borrowedBooks.map((activity) => (
-          <div
-            key={activity.id}
-            className="flex items-center p-3 border border-gray-300 rounded mb-3 gap-3 bg-white shadow-sm"
-          >
-            <img
-              src={activity.book.imageUrl}
-              className="w-10 h-14 object-cover rounded"
-              alt={activity.book.title}
+        {/* Book dropdown + Action button */}
+        <div className="flex items-center gap-3">
+          {/* flex → horizontal layout
+                items-center → vertical alignment
+                gap-3 → spacing between dropdown & button */}
+          <div className="flex-1">
+            {/* flex-1 → take remaining space for dropdown */}
+            <Select
+              options={options}
+              value={selectedOption}
+              onChange={handleChange}
+              isClearable
+              placeholder="Select a book..."
+              className="text-black"
+              formatOptionLabel={(opt) => (
+                <div className="flex items-center gap-2">
+                  {/* flex → horizontal layout
+                        items-center → vertical alignment
+                        gap-2 → spacing between image & text */}
+                  <img
+                    src={opt.imageUrl}
+                    className="w-9 h-12 rounded object-cover"
+                    alt={opt.label}
+                  />
+                  <div>
+                    <div>{opt.label}</div>
+                    <div className="text-xs opacity-60">{opt.book.author}</div>
+                    {/* text-xs → extra small text
+                          opacity-60 → faded text */}
+                  </div>
+                </div>
+              )}
             />
+          </div>
+{/* px-4 py-2 → padding
+                  bg-blue-600 → button background
+                  text-white → text color
+                  rounded → rounded corners
+                  hover:bg-blue-700 → hover effect
+                  disabled:bg-gray-400 → disabled state
+                  transition-colors → smooth hover/disabled transitions */}
+          <button
+            onClick={handleAction}
+            disabled={
+              !selectedOption ||
+              !member?.active ||
+              (mode === "borrow" && !returnDate)
+            }
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
+          >
+            
+            {mode === "read" ? (
+                <div><i className="fa-solid fa-book-medical mr-2"></i>Read
+                {/* mr-2 → margin-right for icon */}</div>
+            ) : (
+              <div> <i className="fa-solid fa-book-medical mr-2"></i>Borrow </div>
+               
+            )}
+          </button>
+        </div>
+     </div> 
+    )}
 
-            <div className="flex-1">
-              <strong>{activity.book.title}</strong>
+    {/* Borrowed books section */}
+    <h3 className="text-lg font-semibold mt-8 mb-3">Borrowed Books</h3>
+    {/* mt-8 → top margin to separate sections */}
 
-              {/* Book times */}
-              <div className="text-[11px] mt-1 opacity-70 font-bold">
-                <div className="text-[10px] mt-1 font-bold">
-                  <div>
-                    Start: <i className="fa-solid fa-calendar-days"></i>{" "}
-                    {new Date(activity.startTime).toLocaleString()}
-                  </div>
-                  <div>
-                    End <i className="fa-solid fa-calendar-days"></i>:{" "}
-                    {new Date(activity.expectedEndTime).toLocaleString()}
-                  </div>
+    {borrowedBooks.length === 0 ? (
+      <p className="text-gray-500">No borrowed books.</p>
+    ) : (
+      borrowedBooks.map((activity) => (
+        
+        <div
+          key={activity.id}
+          className="flex items-center gap-3 p-3 border rounded bg-white shadow-sm mb-3"
+        >
+         
+          <img
+            src={activity.book.imageUrl}
+            className="w-10 h-14 rounded object-cover"
+            alt={activity.book.title}
+          />
+
+          <div className="flex-1">
+            <strong>{activity.book.title}</strong>
+
+            {/* Book times */}
+            <div className="text-[11px] mt-1 font-bold opacity-70">
+              {/* text-[11px] → small text
+                    mt-1 → top margin
+                    font-bold → bold text
+                    opacity-70 → slightly faded */}
+              <div className="text-[10px] mt-1 font-bold">
+                <div>
+                  Start: <i className="fa-solid fa-calendar-days"></i>{" "}
+                  {new Date(activity.startTime).toLocaleString()}
+                </div>
+                <div>
+                  End <i className="fa-solid fa-calendar-days"></i>:{" "}
+                  {new Date(activity.expectedEndTime).toLocaleString()}
                 </div>
               </div>
             </div>
-
-            {/* Return button */}
-            <button
-              disabled={!member?.active}
-              onClick={() => handleReturn(activity)}
-              className="disabled:bg-gray-400 px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 flex items-center gap-1 transition-colors"
-            >
-              <i className="fa-solid fa-rotate-left"></i>
-            </button>
           </div>
-        ))
-      )}
 
-      {/* Warning for inactive members */}
-      {!member?.active && (
-        <span className="text-sm text-yellow-500 flex items-center gap-1 mt-2">
-          Only active members can request or return a book{" "}
-          <i className="fa-solid fa-exclamation"></i>
-        </span>
-      )}
-    </div>
-  );
+          {/* Return button */}
+           {/* px-3 py-2 → padding
+                  flex items-center gap-1 → icon + text alignment
+                  bg-red-600 → red background
+                  text-white → text color
+                  rounded → rounded corners
+                  hover:bg-red-700 → hover effect
+                  disabled:bg-gray-400 → disabled state
+                  transition-colors → smooth hover */}
+          <button
+            disabled={!member?.active}
+            onClick={() => handleReturn(activity)}
+            className="px-3 py-2 flex items-center gap-1 bg-red-600 text-white rounded hover:bg-red-700 disabled:bg-gray-400 transition-colors"
+          >
+           
+            <i className="fa-solid fa-rotate-left"></i>
+          </button>
+        </div>
+      ))
+    )}
+
+    {/* Warning for inactive members */}
+    {!member?.active && (
+      <span className="flex items-center gap-1 mt-2 text-sm text-yellow-500">
+        {/* flex items-center → icon + text layout
+              gap-1 → spacing between icon/text
+              mt-2 → top margin
+              text-sm → small text
+              text-yellow-500 → yellow warning color */}
+        Only active members can request or return a book <i className="fa-solid fa-exclamation"></i>
+      </span>
+    )}
+  </div>
+);
+
+
 }
