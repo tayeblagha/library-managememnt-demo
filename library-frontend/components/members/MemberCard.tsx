@@ -22,7 +22,7 @@ export default function MemberCard({ member, onToggle }: Props) {
     <>
       {/* Card - DIFFERENCE: added cursor-pointer and onClick */}
       <div
-        className="rounded-2xl h-[750px] flex flex-col cursor-pointer bg-white overflow-hidden shadow-lg border border-gray-200" // DIFFERENCE: different height and bg-white
+        className="rounded-2xl h-[700px] flex flex-col cursor-pointer bg-white overflow-hidden shadow-lg border border-gray-200" // DIFFERENCE: different height and bg-white
         onClick={() => setOpenPopup(true)}
       >
         <div className="h-[650px] overflow-hidden"> {/* DIFFERENCE: different height */}
@@ -35,15 +35,10 @@ export default function MemberCard({ member, onToggle }: Props) {
 
         <div className="p-4 flex flex-col grow">
           <div className="flex justify-between items-center text-sm">
-            <h3 className="text-lg font-semibold text-gray-800 mb-1 line-clamp-2">
+            <h3 className="text-lg font-semibold text-gray-800  line-clamp-2">
               {member.name} {/* DIFFERENCE: name instead of title */}
             </h3>
-            {/* DIFFERENCE: No author field */}
-          </div>
-
-          <div className="mt-auto">
             {/* DIFFERENCE: Toggle button instead of copies info */}
-            <div className="flex justify-between items-center">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -55,8 +50,10 @@ export default function MemberCard({ member, onToggle }: Props) {
                     : "bg-gray-300 hover:bg-gray-400 text-gray-800"
                 }`}
               ></button>
-            </div>
+            {/* DIFFERENCE: No author field */}
           </div>
+
+         
         </div>
       </div>
 

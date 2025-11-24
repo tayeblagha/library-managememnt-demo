@@ -9,14 +9,14 @@ import { BookBorrowResponse } from "@/models/BookBorrowResponse";
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_HOST  +"/member";
 
 export const MemberService = {
-  
-  searchMembersByTitle: async (name: string, page: number, size: number): Promise<MemberResponse> => {
+  //do not forget to change title to name
+  searchMembersByName: async (name: string, page: number, size: number): Promise<MemberResponse> => {
     const response = await axios.get(`${API_URL}/pageable`, {
       params: { name, page, size },
     });
     return response.data;
   },
-  searchActiveMembersByTitle: async (name: string, page: number, size: number): Promise<MemberResponse> => {
+  searchActiveMembersByName: async (name: string, page: number, size: number): Promise<MemberResponse> => {
     const response = await axios.get(`${API_URL}/pageable/active`, {
       params: { name, page, size },
     });
