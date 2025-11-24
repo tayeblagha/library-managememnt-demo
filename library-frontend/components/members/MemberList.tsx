@@ -41,8 +41,8 @@ export default function MemberList() {
         const [response] = await Promise.all([
           // DIFFERENT: Service call with active filter logic
           showActiveOnly
-            ? MemberService.searchActiveMembersByTitle(searchTerm, currentPage, pageSize)
-            : MemberService.searchMembersByTitle(searchTerm, currentPage, pageSize),
+            ? MemberService.searchActiveMembersByName(searchTerm, currentPage, pageSize)
+            : MemberService.searchMembersByName(searchTerm, currentPage, pageSize),
           delayPromise,
         ]);
 
@@ -93,9 +93,9 @@ export default function MemberList() {
   }, [currentPage, loadMembers]);
 
   // DIFFERENT: ADD THIS - Toggle handler for active status
-  const handleToggle = async (id: number, currentActive: boolean) => {
+  const handleToggle = async (id: number) => {
     try {
-      const updated = await MemberService.toggleActive(id, currentActive);
+      const updated = await MemberService.toggleActive(id);
 
       setMembers((prev) => {
         const updatedList = prev.map((m) =>

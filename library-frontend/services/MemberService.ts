@@ -29,7 +29,7 @@ export const MemberService = {
   
 
   // optional convenience to toggle based on current state
-  toggleActive: async (id: number, currentlyActive: boolean): Promise<Member> => {
+  toggleActive: async (id: number): Promise<Member> => {
       const response = await axios.post(`${API_URL}/toggle-active/${id}`);
     return response.data;
   },

@@ -7,7 +7,7 @@ import dynamic from "next/dynamic";
 
 interface Props {
   member: Member; 
-  onToggle: (id: number, currentActive: boolean) => void; // DIFFERENCE: added onToggle
+  onToggle: (id: number) => void; // DIFFERENCE: added onToggle
 }
 
 // DIFFERENCE: Add MemberBookManager popup
@@ -42,7 +42,7 @@ export default function MemberCard({ member, onToggle }: Props) {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  onToggle(member.id, member.active);
+                  onToggle(member.id);
                 }}
                 className={`px-5 py-3 rounded-full font-medium text-sm transition-all duration-300 cursor-pointer ${
                   member.active
