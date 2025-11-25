@@ -137,7 +137,7 @@ export default function MemberList() {
       {/* DIFFERENT: ADD THIS - Active Only Toggle Button */}
       <div className="mb-8 flex justify-end">
             <button
-          onClick={() => {
+          onClick={() => { setCurrentPage(0);
             setShowActiveOnly((prev) => !prev);
             // ✅ no manual reload — handled by useEffect above
           }}

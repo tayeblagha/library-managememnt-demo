@@ -38,16 +38,18 @@ export default function MemberCard({ member, onToggle }: Props) {
             <h3 className="text-lg font-semibold text-gray-800  line-clamp-2">
               {member.name} {/* DIFFERENCE: name instead of title */}
             </h3>
-            {/* DIFFERENCE: Toggle button instead of copies info */}
+            {/* DIFFERENCE: Toggle button instead of copies info   
+            
+            transition-all duration-300 button's background color change smoothly over 0.3 seconds */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   onToggle(member.id);
                 }}
-                className={`px-5 py-3 rounded-full font-medium text-sm transition-all duration-300 cursor-pointer ${
+                className={`px-5 py-3 rounded-full font-medium  transition-all duration-300 cursor-pointer ${
                   member.active
-                    ? "bg-green-500 hover:bg-green-600 text-white"
-                    : "bg-gray-300 hover:bg-gray-400 text-gray-800"
+                    ? "bg-green-500 hover:bg-green-600 "
+                    : "bg-gray-300 hover:bg-gray-400 "
                 }`}
               ></button>
             {/* DIFFERENCE: No author field */}

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+// do forget to staticly import Select
 import Select, { SingleValue } from "react-select";
 import { Book } from "@/models/Book";
 import { ReadingActivity } from "@/models/ReadingActivity";
@@ -12,7 +13,7 @@ type Option = {
   value: number;
   label: string;
   imageUrl: string;
-  book: Book;
+ 
 };
 
 export default function MemberBookManager({ memberId }: { memberId: number }) {
@@ -315,9 +316,7 @@ return (
                   />
                   <div>
                     <div>{opt.label}</div>
-                    <div className="text-xs opacity-60">{opt.book.author}</div>
-                    {/* text-xs → extra small text
-                          opacity-60 → faded text */}
+                   
                   </div>
                 </div>
               )}
